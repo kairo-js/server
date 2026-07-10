@@ -10,4 +10,12 @@ permissions:
 
 jobs:
   actionlint:
-    uses: kairo-js/github-workflows/.github/workflows/actionlint.yml@v0.1.10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: false
+      - run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+      - run: actionlint
