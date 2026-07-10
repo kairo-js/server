@@ -1,0 +1,39 @@
+dev.kairojs.com {
+	basic_auth {
+		$BASIC_AUTH_DEV_USER $BASIC_AUTH_DEV_HASH
+	}
+
+	handle /api/* {
+		reverse_proxy $DEV_BACKEND_UPSTREAM
+	}
+
+	handle {
+		reverse_proxy $DEV_FRONTEND_UPSTREAM
+	}
+}
+
+kairojs.com {
+	handle /admin* {
+		basic_auth {
+			$BASIC_AUTH_ADMIN_USER $BASIC_AUTH_ADMIN_HASH
+		}
+
+		reverse_proxy $PROD_FRONTEND_UPSTREAM
+	}
+
+	handle /api/admin/* {
+		basic_auth {
+			$BASIC_AUTH_ADMIN_USER $BASIC_AUTH_ADMIN_HASH
+		}
+
+		reverse_proxy $PROD_BACKEND_UPSTREAM
+	}
+
+	handle /api/* {
+		reverse_proxy $PROD_BACKEND_UPSTREAM
+	}
+
+	handle {
+		reverse_proxy $PROD_FRONTEND_UPSTREAM
+	}
+}

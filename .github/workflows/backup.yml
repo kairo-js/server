@@ -1,0 +1,58 @@
+name: Backup Database
+
+on:
+  schedule:
+    - cron: "0 19 * * *" # 19:00 UTC = 04:00 JST
+  workflow_dispatch:
+    inputs:
+      deploy-env-name:
+        description: Environment to back up.
+        required: true
+        type: choice
+        default: prod
+        options:
+          - prod
+          - dev
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kairo-backup-${{ github.event_name == 'workflow_dispatch' && inputs.deploy-env-name || 'prod' }}
+  cancel-in-progress: false
+
+jobs:
+  backup-prod:
+    if: ${{ github.event_name == 'schedule' || inputs.deploy-env-name == 'prod' }}
+    uses: kairo-js/github-workflows/.github/workflows/postgres-backup.yml@v0.1.10
+    with:
+      app-name: kairo
+      deploy-env-name: prod
+      db-user: kairo
+      db-name: kairo
+      backup-prefix: kairo-prod
+      gdrive-destination-suffix: ${{ github.event_name == 'schedule' && 'daily' || 'manual' }}
+      gdrive-retention-days: ${{ github.event_name == 'schedule' && 30 || 0 }}
+    secrets:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      RCLONE_CONFIG: ${{ secrets.RCLONE_CONFIG }}
+      BACKUP_GDRIVE_DESTINATION: ${{ secrets.PROD_GDRIVE_DESTINATION }}
+
+  backup-dev:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy-env-name == 'dev' }}
+    uses: kairo-js/github-workflows/.github/workflows/postgres-backup.yml@v0.1.10
+    with:
+      app-name: kairo
+      deploy-env-name: dev
+      db-user: kairo
+      db-name: kairo
+      backup-prefix: kairo-dev
+      gdrive-destination-suffix: manual
+    secrets:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      RCLONE_CONFIG: ${{ secrets.RCLONE_CONFIG }}
+      BACKUP_GDRIVE_DESTINATION: ${{ secrets.DEV_GDRIVE_DESTINATION }}

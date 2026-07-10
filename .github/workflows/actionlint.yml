@@ -1,0 +1,13 @@
+name: actionlint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    uses: kairo-js/github-workflows/.github/workflows/actionlint.yml@v0.1.10
