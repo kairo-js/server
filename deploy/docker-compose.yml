@@ -20,6 +20,9 @@ services:
     environment:
       APP_ENV: ${APP_ENV}
       PORT: "8000"
+      PUBLIC_URL: ${PUBLIC_URL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       POSTGRES_HOST: postgres
       POSTGRES_PORT: "5432"
       POSTGRES_USER: ${POSTGRES_USER}

@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   release:
-    uses: kairo-js/github-workflows/.github/workflows/web-app-release.yml@v0.2.2
+    uses: kairo-js/github-workflows/.github/workflows/web-app-release.yml@v0.2.3
     with:
       app-name: kairo
       image-prefix: kairo-js
@@ -32,6 +32,8 @@ jobs:
       dev-frontend-port: ${{ vars.DEV_FRONTEND_PORT }}
       prod-backend-port: ${{ vars.PROD_BACKEND_PORT }}
       prod-frontend-port: ${{ vars.PROD_FRONTEND_PORT }}
+      dev-public-url: https://dev.kairojs.com
+      prod-public-url: https://kairojs.com
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -52,3 +54,7 @@ jobs:
       BASIC_AUTH_DEV_HASH: ${{ secrets.BASIC_AUTH_DEV_HASH }}
       BASIC_AUTH_ADMIN_USER: ${{ secrets.BASIC_AUTH_ADMIN_USER }}
       BASIC_AUTH_ADMIN_HASH: ${{ secrets.BASIC_AUTH_ADMIN_HASH }}
+      DEV_GOOGLE_CLIENT_ID: ${{ secrets.DEV_GOOGLE_CLIENT_ID }}
+      DEV_GOOGLE_CLIENT_SECRET: ${{ secrets.DEV_GOOGLE_CLIENT_SECRET }}
+      PROD_GOOGLE_CLIENT_ID: ${{ secrets.PROD_GOOGLE_CLIENT_ID }}
+      PROD_GOOGLE_CLIENT_SECRET: ${{ secrets.PROD_GOOGLE_CLIENT_SECRET }}

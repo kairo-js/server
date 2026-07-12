@@ -34,6 +34,10 @@ This repository follows the shared `kairo-js/github-workflows` deployment model.
 | `BASIC_AUTH_DEV_HASH` | dev basic auth password hash |
 | `BASIC_AUTH_ADMIN_USER` | prod admin basic auth user |
 | `BASIC_AUTH_ADMIN_HASH` | prod admin basic auth password hash |
+| `DEV_GOOGLE_CLIENT_ID` | Google OAuth client ID for `dev.kairojs.com` |
+| `DEV_GOOGLE_CLIENT_SECRET` | Google OAuth client secret for `dev.kairojs.com` |
+| `PROD_GOOGLE_CLIENT_ID` | Google OAuth client ID for `kairojs.com` |
+| `PROD_GOOGLE_CLIENT_SECRET` | Google OAuth client secret for `kairojs.com` |
 
 ## GitHub Variables
 
@@ -48,3 +52,14 @@ This repository follows the shared `kairo-js/github-workflows` deployment model.
 | `DEV_FRONTEND_PORT` | optional app host published frontend port |
 | `PROD_BACKEND_PORT` | optional app host published backend port |
 | `PROD_FRONTEND_PORT` | optional app host published frontend port |
+
+## Google OAuth Redirect URIs
+
+Google Cloud ConsoleのOAuthクライアントに、環境ごとのリダイレクトURIを登録します。
+
+```text
+https://dev.kairojs.com/api/v1/auth/google/callback
+https://kairojs.com/api/v1/auth/google/callback
+```
+
+devとprodでOAuthクライアントを分け、それぞれ対応するGitHub Secretsへ設定します。

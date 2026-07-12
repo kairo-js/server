@@ -26,8 +26,16 @@ func main() {
 		log.Fatalf("failed to set up db pool: %v", err)
 	}
 	defer pool.Close()
+	if err := db.Migrate(context.Background(), pool); err != nil {
+		log.Fatalf("failed to migrate database: %v", err)
+	}
 
-	router := api.NewRouter(pool)
+	router := api.NewRouter(pool, api.Config{
+		AppEnv:             getEnv("APP_ENV", "dev"),
+		PublicURL:          getEnv("PUBLIC_URL", "http://localhost:3000"),
+		GoogleClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+		GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+	})
 
 	log.Printf("starting server on :%s", port)
 	if err := http.ListenAndServe(":"+port, router); err != nil {

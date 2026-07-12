@@ -21,6 +21,9 @@ services:
     environment:
       APP_ENV: ${APP_ENV:-dev}
       PORT: "8000"
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:3000}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       POSTGRES_HOST: postgres
       POSTGRES_PORT: "5432"
       POSTGRES_USER: ${POSTGRES_USER:-kairo}

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kairo",
-  description: "Kairo service",
+  title: "Kairo — Add-on registry",
+  description: "Kairoアドオンの公開・配布サービス",
 };
 
 export default function RootLayout({
