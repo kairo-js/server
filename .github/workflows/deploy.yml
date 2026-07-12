@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   release:
-    uses: kairo-js/github-workflows/.github/workflows/web-app-release.yml@v0.2.3
+    uses: kairo-js/github-workflows/.github/workflows/web-app-release.yml@v0.2.4
     with:
       app-name: kairo
       image-prefix: kairo-js
@@ -58,3 +58,7 @@ jobs:
       DEV_GOOGLE_CLIENT_SECRET: ${{ secrets.DEV_GOOGLE_CLIENT_SECRET }}
       PROD_GOOGLE_CLIENT_ID: ${{ secrets.PROD_GOOGLE_CLIENT_ID }}
       PROD_GOOGLE_CLIENT_SECRET: ${{ secrets.PROD_GOOGLE_CLIENT_SECRET }}
+      DEV_GITHUB_CLIENT_ID: ${{ secrets.DEV_GITHUB_CLIENT_ID }}
+      DEV_GITHUB_CLIENT_SECRET: ${{ secrets.DEV_GITHUB_CLIENT_SECRET }}
+      PROD_GITHUB_CLIENT_ID: ${{ secrets.PROD_GITHUB_CLIENT_ID }}
+      PROD_GITHUB_CLIENT_SECRET: ${{ secrets.PROD_GITHUB_CLIENT_SECRET }}

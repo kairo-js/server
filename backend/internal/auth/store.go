@@ -25,7 +25,8 @@ type User struct {
 	CreatedAt   time.Time `json:"createdAt"`
 }
 
-type GoogleProfile struct {
+type OAuthProfile struct {
+	Provider    string
 	ID          string
 	Email       string
 	DisplayName string
@@ -40,7 +41,7 @@ func NewStore(pool *pgxpool.Pool) *Store {
 	return &Store{pool: pool}
 }
 
-func (s *Store) UpsertGoogleUser(ctx context.Context, profile GoogleProfile) (User, error) {
+func (s *Store) UpsertOAuthUser(ctx context.Context, profile OAuthProfile) (User, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return User{}, err
@@ -52,8 +53,8 @@ func (s *Store) UpsertGoogleUser(ctx context.Context, profile GoogleProfile) (Us
 		SELECT u.id, u.email, u.display_name, u.avatar_url, u.created_at
 		FROM users u
 		JOIN oauth_accounts oa ON oa.user_id = u.id
-		WHERE oa.provider = 'google' AND oa.provider_user_id = $1
-	`, profile.ID).Scan(&user.ID, &user.Email, &user.DisplayName, &user.AvatarURL, &user.CreatedAt)
+		WHERE oa.provider = $1 AND oa.provider_user_id = $2
+	`, profile.Provider, profile.ID).Scan(&user.ID, &user.Email, &user.DisplayName, &user.AvatarURL, &user.CreatedAt)
 
 	if errors.Is(err, pgx.ErrNoRows) {
 		err = tx.QueryRow(ctx, `
@@ -72,8 +73,8 @@ func (s *Store) UpsertGoogleUser(ctx context.Context, profile GoogleProfile) (Us
 
 		_, err = tx.Exec(ctx, `
 			INSERT INTO oauth_accounts (provider, provider_user_id, user_id, email)
-			VALUES ('google', $1, $2, $3)
-		`, profile.ID, user.ID, profile.Email)
+			VALUES ($1, $2, $3, $4)
+		`, profile.Provider, profile.ID, user.ID, profile.Email)
 		if err != nil {
 			return User{}, fmt.Errorf("create oauth account: %w", err)
 		}
@@ -90,9 +91,9 @@ func (s *Store) UpsertGoogleUser(ctx context.Context, profile GoogleProfile) (Us
 			return User{}, fmt.Errorf("update user: %w", err)
 		}
 		_, err = tx.Exec(ctx, `
-			UPDATE oauth_accounts SET email = $2, updated_at = now()
-			WHERE provider = 'google' AND provider_user_id = $1
-		`, profile.ID, profile.Email)
+			UPDATE oauth_accounts SET email = $3, updated_at = now()
+			WHERE provider = $1 AND provider_user_id = $2
+		`, profile.Provider, profile.ID, profile.Email)
 		if err != nil {
 			return User{}, fmt.Errorf("update oauth account: %w", err)
 		}

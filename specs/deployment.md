@@ -38,6 +38,10 @@ This repository follows the shared `kairo-js/github-workflows` deployment model.
 | `DEV_GOOGLE_CLIENT_SECRET` | Google OAuth client secret for `dev.kairojs.com` |
 | `PROD_GOOGLE_CLIENT_ID` | Google OAuth client ID for `kairojs.com` |
 | `PROD_GOOGLE_CLIENT_SECRET` | Google OAuth client secret for `kairojs.com` |
+| `DEV_GITHUB_CLIENT_ID` | GitHub OAuth App client ID for `dev.kairojs.com` |
+| `DEV_GITHUB_CLIENT_SECRET` | GitHub OAuth App client secret for `dev.kairojs.com` |
+| `PROD_GITHUB_CLIENT_ID` | GitHub OAuth App client ID for `kairojs.com` |
+| `PROD_GITHUB_CLIENT_SECRET` | GitHub OAuth App client secret for `kairojs.com` |
 
 ## GitHub Variables
 
@@ -63,3 +67,10 @@ https://kairojs.com/api/v1/auth/google/callback
 ```
 
 devとprodでOAuthクライアントを分け、それぞれ対応するGitHub Secretsへ設定します。
+
+GitHub OAuth Appsにも環境ごとのAuthorization callback URLを登録します。
+
+```text
+https://dev.kairojs.com/api/v1/auth/github/callback
+https://kairojs.com/api/v1/auth/github/callback
+```

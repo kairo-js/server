@@ -75,7 +75,7 @@ POST   /api/v1/tokens
 
 ## 認証方針案
 
-- WebではGoogleログインを提供する
+- WebではGoogleログインとGitHubログインを提供する
 - CLIではユーザーが発行したAPIトークンを利用する
 - APIトークンは平文保存せず、ハッシュ化して保持する
 - トークンには失効、最終利用日時、権限スコープを持たせることを検討する
@@ -84,6 +84,9 @@ POST   /api/v1/tokens
 
 - Google OAuth 2.0/OpenID ConnectのUserInfoを使ってユーザーを作成・更新する
 - Googleで検証済みのメールアドレスのみ受け付ける
+- GitHub OAuthのUser APIとEmail APIを使ってユーザーを作成・更新する
+- GitHubで検証済みのprimaryメールアドレスのみ受け付ける
+- 異なるOAuthプロバイダーで検証済みメールアドレスが一致した場合は、同じKairoユーザーへ紐付ける
 - ランダムなセッショントークンをHttpOnly Cookieへ保存する
 - PostgreSQLにはセッショントークンのSHA-256ハッシュのみ保存する
 - セッションの有効期間は30日とする
@@ -94,6 +97,8 @@ POST   /api/v1/tokens
 ```text
 GET  /api/v1/auth/google
 GET  /api/v1/auth/google/callback
+GET  /api/v1/auth/github
+GET  /api/v1/auth/github/callback
 GET  /api/v1/me
 POST /api/v1/logout
 ```

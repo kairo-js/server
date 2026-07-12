@@ -40,6 +40,23 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 
 Google OAuthが未設定の場合もサービスは起動しますが、ログインAPIは `503 Service Unavailable` を返します。
 
+## Local GitHub Login
+
+GitHub OAuth Appを作成し、Authorization callback URLに次を登録します。
+
+```text
+http://localhost:3000/api/v1/auth/github/callback
+```
+
+起動時に次の環境変数を設定します。
+
+```text
+GITHUB_CLIENT_ID=your-client-id
+GITHUB_CLIENT_SECRET=your-client-secret
+```
+
+GitHub OAuthが未設定の場合もサービスは起動しますが、GitHubログインAPIは `503 Service Unavailable` を返します。
+
 ## Required Settings
 
 Use the same secret and variable names as werewolf-server, but with Kairo-specific values for DB passwords and Google Drive destinations.

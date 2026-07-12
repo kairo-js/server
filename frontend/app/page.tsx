@@ -26,13 +26,16 @@ function LoginContent() {
           <a className="button primary" href="/api/v1/auth/google">
             Googleでログイン
           </a>
+          <a className="button github" href="/api/v1/auth/github">
+            GitHubでログイン
+          </a>
           <a className="button secondary" href="/account">
             アカウントを確認
           </a>
         </div>
 
         <p className="fine-print">
-          ログインすると、今後アドオンの投稿やAPIトークンの管理ができるようになります。
+          GoogleまたはGitHubでログインすると、今後アドオンの投稿やAPIトークンの管理ができるようになります。
         </p>
       </section>
     </main>

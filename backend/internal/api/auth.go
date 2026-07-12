@@ -18,7 +18,7 @@ import (
 
 const (
 	sessionCookieName = "kairo_session"
-	stateCookieName   = "kairo_oauth_state"
+	googleStateCookie = "kairo_oauth_google_state"
 	googleAuthURL     = "https://accounts.google.com/o/oauth2/v2/auth"
 	googleTokenURL    = "https://oauth2.googleapis.com/token"
 	googleUserInfoURL = "https://openidconnect.googleapis.com/v1/userinfo"
@@ -53,11 +53,11 @@ func (h *authHandler) googleLogin(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "internal_error", "Could not start login")
 		return
 	}
-	h.setCookie(w, stateCookieName, state, time.Now().Add(10*time.Minute), true)
+	h.setCookie(w, googleStateCookie, state, time.Now().Add(10*time.Minute), true)
 
 	params := url.Values{
 		"client_id":     {h.config.GoogleClientID},
-		"redirect_uri":  {h.callbackURL()},
+		"redirect_uri":  {h.googleCallbackURL()},
 		"response_type": {"code"},
 		"scope":         {"openid email profile"},
 		"state":         {state},
@@ -67,12 +67,12 @@ func (h *authHandler) googleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *authHandler) googleCallback(w http.ResponseWriter, r *http.Request) {
-	stateCookie, err := r.Cookie(stateCookieName)
+	stateCookie, err := r.Cookie(googleStateCookie)
 	if err != nil || stateCookie.Value == "" || r.URL.Query().Get("state") != stateCookie.Value {
 		h.redirectAuthError(w, r, "invalid_state")
 		return
 	}
-	h.clearCookie(w, stateCookieName)
+	h.clearCookie(w, googleStateCookie)
 
 	if providerError := r.URL.Query().Get("error"); providerError != "" {
 		h.redirectAuthError(w, r, providerError)
@@ -101,8 +101,8 @@ func (h *authHandler) googleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.store.UpsertGoogleUser(r.Context(), auth.GoogleProfile{
-		ID: profile.Subject, Email: strings.ToLower(profile.Email),
+	user, err := h.store.UpsertOAuthUser(r.Context(), auth.OAuthProfile{
+		Provider: "google", ID: profile.Subject, Email: strings.ToLower(profile.Email),
 		DisplayName: profile.Name, AvatarURL: profile.Picture,
 	})
 	if err != nil {
@@ -157,7 +157,7 @@ func (h *authHandler) exchangeGoogleCode(r *http.Request, code string) (string, 
 		"code":          {code},
 		"client_id":     {h.config.GoogleClientID},
 		"client_secret": {h.config.GoogleClientSecret},
-		"redirect_uri":  {h.callbackURL()},
+		"redirect_uri":  {h.googleCallbackURL()},
 		"grant_type":    {"authorization_code"},
 	}
 	req, err := http.NewRequestWithContext(r.Context(), http.MethodPost, googleTokenURL, strings.NewReader(form.Encode()))
@@ -205,7 +205,7 @@ func (h *authHandler) fetchGoogleProfile(r *http.Request, accessToken string) (g
 	return profile, nil
 }
 
-func (h *authHandler) callbackURL() string {
+func (h *authHandler) googleCallbackURL() string {
 	return h.config.PublicURL + "/api/v1/auth/google/callback"
 }
 

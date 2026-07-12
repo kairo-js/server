@@ -63,6 +63,9 @@ export default function AccountPage() {
               <a className="button primary" href="/api/v1/auth/google">
                 Googleでログイン
               </a>
+              <a className="button github" href="/api/v1/auth/github">
+                GitHubでログイン
+              </a>
               <Link className="button secondary" href="/">
                 トップへ戻る
               </Link>

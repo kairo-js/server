@@ -35,6 +35,8 @@ func main() {
 		PublicURL:          getEnv("PUBLIC_URL", "http://localhost:3000"),
 		GoogleClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		GitHubClientID:     os.Getenv("GITHUB_CLIENT_ID"),
+		GitHubClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
 	})
 
 	log.Printf("starting server on :%s", port)

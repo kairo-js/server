@@ -14,6 +14,8 @@ type Config struct {
 	PublicURL          string
 	GoogleClientID     string
 	GoogleClientSecret string
+	GitHubClientID     string
+	GitHubClientSecret string
 }
 
 func NewRouter(pool *pgxpool.Pool, config Config) http.Handler {
@@ -28,6 +30,8 @@ func NewRouter(pool *pgxpool.Pool, config Config) http.Handler {
 	mux.HandleFunc("GET /api/health/db", DBHealthHandler(pool))
 	mux.HandleFunc("GET /api/v1/auth/google", authAPI.googleLogin)
 	mux.HandleFunc("GET /api/v1/auth/google/callback", authAPI.googleCallback)
+	mux.HandleFunc("GET /api/v1/auth/github", authAPI.githubLogin)
+	mux.HandleFunc("GET /api/v1/auth/github/callback", authAPI.githubCallback)
 	mux.HandleFunc("GET /api/v1/me", authAPI.me)
 	mux.HandleFunc("POST /api/v1/logout", authAPI.logout)
 
