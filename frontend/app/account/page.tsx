@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { GitHubIcon, GoogleIcon } from "../components/auth-icons";
+import { SiteHeader } from "../components/site-header";
 
 type User = {
   id: string;
@@ -49,8 +51,10 @@ export default function AccountPage() {
   }
 
   return (
-    <main className="page">
-      <section className="panel auth-panel">
+    <div className="site-shell">
+      <SiteHeader showLogin={false} />
+      <main className="account-page">
+       <section className="panel auth-panel">
         <p className="eyebrow">Kairo account</p>
 
         {account.status === "loading" && <p className="lead">読み込んでいます…</p>}
@@ -58,12 +62,14 @@ export default function AccountPage() {
         {account.status === "signed-out" && (
           <>
             <h1 className="compact-heading">ログインが必要です</h1>
-            <p className="lead">アカウントを表示するにはGoogleでログインしてください。</p>
+            <p className="lead">アカウントを表示するにはログインしてください。</p>
             <div className="actions">
-              <a className="button primary" href="/api/v1/auth/google">
+              <a className="button provider-large google" href="/api/v1/auth/google">
+                <GoogleIcon className="provider-icon" />
                 Googleでログイン
               </a>
-              <a className="button github" href="/api/v1/auth/github">
+              <a className="button provider-large github" href="/api/v1/auth/github">
+                <GitHubIcon className="provider-icon" />
                 GitHubでログイン
               </a>
               <Link className="button secondary" href="/">
@@ -107,7 +113,8 @@ export default function AccountPage() {
             </div>
           </>
         )}
-      </section>
-    </main>
+       </section>
+      </main>
+    </div>
   );
 }
