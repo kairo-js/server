@@ -14,21 +14,30 @@ import {
   type MinecraftModuleType,
   type PropertiesForm,
 } from "./properties-builder";
+import {
+  buildProjectFiles,
+  createProjectZip,
+  type PackageManager,
+  type ProjectOptions,
+  type SourceLanguage,
+} from "./project-builder";
 
 function VersionFields({
   label,
   values,
   onChange,
   error,
+  requiredLabel,
 }: {
   label: string;
   values: [number, number, number];
   onChange: (index: number, value: number) => void;
   error?: string;
+  requiredLabel: string;
 }) {
   return (
     <fieldset className="form-field">
-      <legend>{label}<span className="required">必須</span></legend>
+      <legend>{label}<span className="required">{requiredLabel}</span></legend>
       <div className="version-fields">
         {["major", "minor", "patch"].map((part, index) => (
           <label key={part}>
@@ -48,10 +57,16 @@ export default function DevelopPage() {
   const dictionary = getDictionary(locale);
   const messages = dictionary.develop;
   const [form, setForm] = useState<PropertiesForm>(initialPropertiesForm);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [options, setOptions] = useState<ProjectOptions>({
+    language: "typescript", runtime: "node", useGitHub: true, packageManager: "pnpm",
+    usePrettier: true, useESLint: true, includeReadme: true,
+  });
+  const [packIcon, setPackIcon] = useState<File>();
   const [submitted, setSubmitted] = useState(false);
   const [copied, setCopied] = useState(false);
   const errors = validatePropertiesForm(form, dictionary.validation);
-  const source = generatePropertiesSource(form);
+  const source = generatePropertiesSource(form, options.language);
   const tags = deriveTags(form);
 
   function update<K extends keyof PropertiesForm>(key: K, value: PropertiesForm[K]) {
@@ -72,6 +87,26 @@ export default function DevelopPage() {
     update(keys[index], value);
   }
 
+  function selectLanguage(language: SourceLanguage) {
+    const advancedDefaults = language === "typescript";
+    setOptions((current) => ({
+      ...current,
+      language,
+      useGitHub: advancedDefaults,
+      packageManager: advancedDefaults ? "pnpm" : "none",
+      usePrettier: advancedDefaults,
+      useESLint: advancedDefaults,
+    }));
+  }
+
+  function selectPackageManager(packageManager: PackageManager) {
+    setOptions((current) => ({
+      ...current,
+      packageManager,
+      ...(packageManager === "none" ? { usePrettier: false, useESLint: false } : {}),
+    }));
+  }
+
   async function copySource() {
     if (Object.keys(errors).length) {
       setSubmitted(true);
@@ -82,30 +117,101 @@ export default function DevelopPage() {
     window.setTimeout(() => setCopied(false), 1800);
   }
 
-  function downloadSource() {
+  async function downloadProject() {
     if (Object.keys(errors).length) {
       setSubmitted(true);
       return;
     }
-    const blob = new Blob([source], { type: "text/javascript;charset=utf-8" });
+    const icon = packIcon ? new Uint8Array(await packIcon.arrayBuffer()) : undefined;
+    const blob = createProjectZip(buildProjectFiles(form, options, icon));
     const href = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = href;
-    anchor.download = "properties.js";
+    anchor.download = `${form.id || "kairo-addon"}.zip`;
     anchor.click();
     URL.revokeObjectURL(href);
   }
 
   const visibleError = (key: string) => submitted ? errors[key] : undefined;
 
+  if (step === 1) {
+    return (
+      <div className="site-shell">
+        <SiteHeader locale={locale} />
+        <main className="develop-page wizard-page">
+          <div className="wizard-steps"><span className="active">1<span>{messages.stepEnvironment}</span></span><i /><span>2<span>{messages.stepAddon}</span></span></div>
+          <header className="develop-intro compact"><p className="eyebrow">{messages.eyebrow}</p><h1>{messages.environmentTitle}</h1><p>{messages.environmentDescription}</p></header>
+          <div className="environment-form">
+            <section className="choice-section">
+              <div className="section-heading"><span>01</span><div><h2>{messages.languageQuestion}</h2></div></div>
+              <div className="choice-grid two">
+                {(["javascript", "typescript"] as SourceLanguage[]).map((language) => (
+                  <label className={`choice-card ${options.language === language ? "selected" : ""}`} key={language}>
+                    <input type="radio" name="language" checked={options.language === language} onChange={() => selectLanguage(language)} />
+                    <b>{language === "javascript" ? messages.javascript : messages.typescript}</b>
+                    <span>{language === "javascript" ? messages.javascriptDescription : messages.typescriptDescription}</span>
+                    <code>{language === "javascript" ? "JS" : "TS"}</code>
+                  </label>
+                ))}
+              </div>
+            </section>
+            <section className="choice-section">
+              <div className="section-heading"><span>02</span><div><h2>{messages.runtimeQuestion}</h2><p>{messages.runtimeDescription}</p></div></div>
+              <div className="choice-grid two">
+                <label className="choice-card selected"><input type="radio" name="runtime" checked readOnly /><b>{messages.nodeRuntime}</b><span>{messages.nodeDescription}</span><code>Node</code></label>
+                <div className="choice-card disabled"><b>{messages.otherRuntimes}</b><span>{messages.otherRuntimesDescription}</span><code>Later</code></div>
+              </div>
+            </section>
+            <section className="choice-section">
+              <div className="section-heading"><span>03</span><div><h2>{messages.githubQuestion}</h2></div></div>
+              <div className="choice-grid two">
+                <label className={`choice-card ${options.useGitHub ? "selected" : ""}`}><input type="radio" name="github" checked={options.useGitHub} onChange={() => setOptions((current) => ({ ...current, useGitHub: true }))} /><b>{messages.useGitHub}</b><span>{messages.useGitHubDescription}</span><code>Git</code></label>
+                <label className={`choice-card ${!options.useGitHub ? "selected" : ""}`}><input type="radio" name="github" checked={!options.useGitHub} onChange={() => setOptions((current) => ({ ...current, useGitHub: false }))} /><b>{messages.noGitHub}</b><span>{messages.noGitHubDescription}</span><code>—</code></label>
+              </div>
+            </section>
+            <section className="choice-section">
+              <div className="section-heading"><span>04</span><div><h2>{messages.packageQuestion}</h2><p>{messages.packageDescription}</p></div></div>
+              <div className="choice-grid three">
+                {(["npm", "pnpm", "none"] as PackageManager[]).map((manager) => (
+                  <label className={`choice-card compact-card ${options.packageManager === manager ? "selected" : ""}`} key={manager}>
+                    <input type="radio" name="manager" checked={options.packageManager === manager} onChange={() => selectPackageManager(manager)} />
+                    <b>{manager === "none" ? messages.noPackageManager : manager}</b><code>{manager === "none" ? "—" : manager.slice(0, 2)}</code>
+                  </label>
+                ))}
+              </div>
+              {options.packageManager === "none" && <p className="choice-warning">{messages.noManagerWarning}</p>}
+            </section>
+            <section className="choice-section">
+              <div className="section-heading"><span>05</span><div><h2>{messages.toolingQuestion}</h2><p>{messages.toolingDescription}</p></div></div>
+              <div className="choice-grid two">
+                <label className={`choice-card ${options.usePrettier ? "selected" : ""} ${options.packageManager === "none" ? "disabled" : ""}`}>
+                  <input type="checkbox" checked={options.usePrettier} disabled={options.packageManager === "none"} onChange={(event) => setOptions((current) => ({ ...current, usePrettier: event.target.checked }))} />
+                  <b>Prettier</b><span>{messages.prettierDescription}</span><code>Format</code>
+                </label>
+                <label className={`choice-card ${options.useESLint ? "selected" : ""} ${options.packageManager === "none" ? "disabled" : ""}`}>
+                  <input type="checkbox" checked={options.useESLint} disabled={options.packageManager === "none"} onChange={(event) => setOptions((current) => ({ ...current, useESLint: event.target.checked }))} />
+                  <b>ESLint</b><span>{messages.eslintDescription}</span><code>Lint</code>
+                </label>
+              </div>
+              {options.packageManager === "none" && <p className="choice-warning">{messages.toolingRequiresManager}</p>}
+            </section>
+            <div className="wizard-navigation"><button className="button primary" type="button" onClick={() => setStep(2)}>{messages.continue} <span aria-hidden="true">→</span></button></div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="site-shell">
       <SiteHeader locale={locale} />
       <main className="develop-page">
+        <div className="wizard-steps"><span className="done">1<span>{messages.stepEnvironment}</span></span><i /><span className="active">2<span>{messages.stepAddon}</span></span></div>
         <header className="develop-intro">
           <p className="eyebrow">{messages.eyebrow}</p>
           <h1>{messages.title}</h1>
-          <p>{messages.introBefore} <code>{messages.introFile}</code> {messages.introAfter}</p>
+          <p>{messages.introBefore} <code>src/properties.{options.language === "typescript" ? "ts" : "js"}</code> {messages.introAfter}</p>
+          <button className="back-link" type="button" onClick={() => setStep(1)}>← {messages.back}</button>
         </header>
 
         <div className="builder-layout">
@@ -139,12 +245,12 @@ export default function DevelopPage() {
 
             <section className="form-section">
               <div className="section-heading"><span>03</span><div><h2>{messages.versionTitle}</h2><p>{messages.versionDescription}</p></div></div>
-              <VersionFields label={messages.addonVersion} values={[form.versionMajor, form.versionMinor, form.versionPatch]} onChange={(index, value) => updateVersion("version", index, value)} error={visibleError("version")} />
+              <VersionFields label={messages.addonVersion} requiredLabel={messages.required} values={[form.versionMajor, form.versionMinor, form.versionPatch]} onChange={(index, value) => updateVersion("version", index, value)} error={visibleError("version")} />
               <div className="inline-fields">
                 <label className="form-field"><span>{messages.prerelease}</span><input value={form.prerelease} onChange={(event) => update("prerelease", event.target.value)} placeholder="beta.1" /></label>
                 <label className="form-field"><span>{messages.build}</span><input value={form.build} onChange={(event) => update("build", event.target.value)} placeholder="20260713" /></label>
               </div>
-              <VersionFields label={messages.engineVersion} values={[form.engineMajor, form.engineMinor, form.enginePatch]} onChange={(index, value) => updateVersion("engine", index, value)} error={visibleError("engine")} />
+              <VersionFields label={messages.engineVersion} requiredLabel={messages.required} values={[form.engineMajor, form.engineMinor, form.enginePatch]} onChange={(index, value) => updateVersion("engine", index, value)} error={visibleError("engine")} />
             </section>
 
             <section className="form-section full-section">
@@ -174,14 +280,28 @@ export default function DevelopPage() {
               <div className="derived-tags"><span>{messages.automaticTag}</span>{tags.slice(0, 1).map((tag) => <b className={`tag ${tag}`} key={tag}>{tag}</b>)}</div>
               <label className="form-field full"><span>{messages.customTags}</span><input value={form.customTags} onChange={(event) => update("customTags", event.target.value)} placeholder={messages.customTagsPlaceholder} /><small>{messages.customTagsHelp}</small></label>
             </section>
+
+            <section className="form-section project-settings">
+              <div className="section-heading"><span>07</span><div><h2>{messages.projectSettings}</h2><p>{messages.manifestNotice}</p></div></div>
+              <label className="file-picker">
+                <span><b>{messages.packIcon}</b><small>{messages.packIconHelp}</small></span>
+                <input type="file" accept="image/png" onChange={(event) => setPackIcon(event.target.files?.[0])} />
+                <em>{packIcon?.name ?? messages.chooseIcon}</em>
+              </label>
+              <label className="toggle-row">
+                <span><b>{messages.readme}</b><small>{messages.readmeDescription}</small></span>
+                <input type="checkbox" checked={options.includeReadme} onChange={(event) => setOptions((current) => ({ ...current, includeReadme: event.target.checked }))} />
+              </label>
+            </section>
           </form>
 
           <aside className="properties-preview">
-            <div className="preview-heading"><div><span>{messages.preview}</span><strong>properties.js</strong></div><span className={`validation-badge ${Object.keys(errors).length ? "invalid" : "valid"}`}>{Object.keys(errors).length ? messages.needsReview(Object.keys(errors).length) : messages.validationOk}</span></div>
+            <div className="preview-heading"><div><span>{messages.preview}</span><strong>properties.{options.language === "typescript" ? "ts" : "js"}</strong></div><span className={`validation-badge ${Object.keys(errors).length ? "invalid" : "valid"}`}>{Object.keys(errors).length ? messages.needsReview(Object.keys(errors).length) : messages.validationOk}</span></div>
             <pre><code>{source}</code></pre>
+            <div className="generated-files"><b>{messages.generatedFiles}</b><span>src/ · BP/manifest.json · BP/scripts/ {options.packageManager !== "none" && "· package.json "}{options.usePrettier && "· Prettier "}{options.useESLint && "· ESLint "}{options.useGitHub && "· .gitignore "}{options.includeReadme && "· README.md"}</span></div>
             <div className="preview-actions">
               <button className="button secondary" type="button" onClick={copySource}>{copied ? messages.copied : messages.copy}</button>
-              <button className="button primary" type="button" onClick={downloadSource}>{messages.save}</button>
+              <button className="button primary" type="button" onClick={downloadProject}>{messages.downloadProject}</button>
             </div>
             <p className="preview-note">{messages.privacy}</p>
           </aside>
