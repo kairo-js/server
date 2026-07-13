@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { HtmlLocale } from "./components/html-locale";
 
 export const metadata: Metadata = {
   title: "Kairo — Add-on registry",
-  description: "Kairoアドオンの公開・配布サービス",
+  description: "Kairo add-on registry / Kairoアドオンの公開・配布サービス",
 };
 
 export default function RootLayout({
@@ -13,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      <body><HtmlLocale />{children}</body>
     </html>
   );
 }

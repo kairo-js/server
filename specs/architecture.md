@@ -22,6 +22,26 @@
 - Deploy: GitHub Actions reusable workflows
 - Proxy: shared Caddy
 
+## 多言語対応
+
+Web UIはURLの先頭にロケールを含めます。初期対応言語は日本語と英語です。
+
+```text
+/ja
+/en
+/ja/account
+/en/account
+/ja/develop
+/en/develop
+```
+
+- 翻訳文はFrontendのロケール辞書へ集約する
+- 対応ロケール一覧と既定言語を一か所で管理する
+- 言語追加時はロケール一覧と対応辞書を追加する
+- ルートURLでは言語Cookieを優先し、未設定時はブラウザの `Accept-Language` から日本語または英語を選ぶ
+- 言語選択はCookieへ保存し、OAuthログイン後も同じ言語へ戻れるようにする
+- ユーザーが入力するアドオン名や説明の多言語化は、Web UIの翻訳とは別にデータモデル設計時に決定する
+
 ## MVPの実装順序
 
 1. Googleログインを含むアカウント機能

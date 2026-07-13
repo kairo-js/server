@@ -39,6 +39,17 @@ export type PropertiesForm = {
   customTags: string;
 };
 
+type ValidationMessages = {
+  idRequired: string;
+  idInvalid: string;
+  nameRequired: string;
+  descriptionRequired: string;
+  versionInvalid: string;
+  kairoRequired: string;
+  databaseRequired: string;
+  moduleVersionRequired: string;
+};
+
 export const initialPropertiesForm: PropertiesForm = {
   id: "",
   authors: "",
@@ -71,12 +82,12 @@ export const initialPropertiesForm: PropertiesForm = {
 const idPattern = /^[A-Za-z0-9-]+$/;
 const reservedTags = new Set(["official", "approved", "stable", "experimental"]);
 
-export function validatePropertiesForm(form: PropertiesForm) {
+export function validatePropertiesForm(form: PropertiesForm, messages: ValidationMessages) {
   const errors: Record<string, string> = {};
-  if (!form.id) errors.id = "アドオンIDは必須です。";
-  else if (!idPattern.test(form.id)) errors.id = "A-Z、a-z、0-9、- のみ使用できます。";
-  if (!form.name.trim()) errors.name = "表示名は必須です。";
-  if (!form.description.trim()) errors.description = "説明は必須です。";
+  if (!form.id) errors.id = messages.idRequired;
+  else if (!idPattern.test(form.id)) errors.id = messages.idInvalid;
+  if (!form.name.trim()) errors.name = messages.nameRequired;
+  if (!form.description.trim()) errors.description = messages.descriptionRequired;
 
   const numberFields = [
     ["version", form.versionMajor, form.versionMinor, form.versionPatch],
@@ -84,18 +95,18 @@ export function validatePropertiesForm(form: PropertiesForm) {
   ] as const;
   for (const [key, ...values] of numberFields) {
     if (values.some((value) => !Number.isInteger(value) || value < 0)) {
-      errors[key] = "バージョンは0以上の整数で入力してください。";
+      errors[key] = messages.versionInvalid;
     }
   }
 
-  if (!form.kairoVersion.trim()) errors.kairoVersion = "Kairoのバージョン条件は必須です。";
+  if (!form.kairoVersion.trim()) errors.kairoVersion = messages.kairoRequired;
   if (!form.kairoDatabaseVersion.trim()) {
-    errors.kairoDatabaseVersion = "Kairo Databaseのバージョン条件は必須です。";
+    errors.kairoDatabaseVersion = messages.databaseRequired;
   }
   for (const moduleName of minecraftModules) {
     const selection = form.modules[moduleName];
     if (selection.selected && !selection.version.trim()) {
-      errors[`module:${moduleName}`] = "選択したモジュールにはバージョンが必要です。";
+      errors[`module:${moduleName}`] = messages.moduleVersionRequired;
     }
   }
   return errors;

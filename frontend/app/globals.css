@@ -90,6 +90,10 @@ a { color: inherit; }
 .provider-button:hover { transform: translateY(-1px); box-shadow: 0 5px 14px #15231a18; }
 .provider-icon { width: 18px; height: 18px; flex: 0 0 auto; }
 .header-account-link { padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; }
+.locale-switcher { display: inline-flex; padding: 3px; border: 1px solid #cfd5cf; border-radius: 7px; background: #fff; }
+.locale-switcher a { display: grid; min-width: 30px; min-height: 28px; place-items: center; border-radius: 5px; color: var(--muted); font-size: 10px; font-weight: 800; text-decoration: none; }
+.locale-switcher a.active { color: #fff; background: var(--accent); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 .hero {
   display: grid;
