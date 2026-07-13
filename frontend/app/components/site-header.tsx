@@ -15,6 +15,7 @@ export function SiteHeader({ showLogin = true }: SiteHeaderProps) {
 
       <nav className="header-nav" aria-label="メインナビゲーション">
         <Link href="/#addons">アドオン</Link>
+        <Link href="/develop">開発サポート</Link>
         {showLogin ? (
           <div className="login-actions" aria-label="ログイン方法">
             <a className="provider-button google" href="/api/v1/auth/google">
