@@ -27,6 +27,7 @@ export type Dictionary = {
     manifestNotice: string; generatedFiles: string; downloadProject: string; noManagerWarning: string;
     required: string; basicTitle: string; basicDescription: string; id: string; idPlaceholder: string;
     idHelp: string; displayName: string; displayNamePlaceholder: string; description: string;
+    idAvailability: Record<"idle" | "checking" | "available" | "taken" | "reserved" | "invalid" | "unknown", string>;
     descriptionPlaceholder: string; authorTitle: string; authorDescription: string; authors: string;
     authorsPlaceholder: string; authorsHelp: string; url: string; license: string;
     versionTitle: string; versionDescription: string; addonVersion: string; prerelease: string;
@@ -77,6 +78,11 @@ const ja: Dictionary = {
     manifestNotice: "manifest.jsonはpropertiesの名前、説明、バージョン、Minecraft依存関係から自動生成されます。", generatedFiles: "生成ファイル", downloadProject: "プロジェクトZIPを保存", noManagerWarning: "パッケージマネージャーを使わない場合、初期のBP成果物は生成されますが、自動ビルド設定は含まれません。",
     basicTitle: "基本情報", basicDescription: "アドオンを識別する情報です。", id: "アドオンID", idPlaceholder: "my-addon",
     idHelp: "A-Z、a-z、0-9、ハイフンのみ使用できます。", displayName: "表示名", displayNamePlaceholder: "My Add-on",
+    idAvailability: {
+      idle: "IDを入力してください。", checking: "Kairoレジストリを確認しています…", available: "Kairoレジストリ上では現在利用可能です。",
+      taken: "このIDは既に登録されています。", reserved: "このIDはKairo公式パッケージ用に予約されています。",
+      invalid: "IDの形式を確認してください。", unknown: "レジストリへ接続できませんでした。重複を保証できませんが生成は可能です。",
+    },
     description: "説明", descriptionPlaceholder: "このアドオンでできること", authorTitle: "作者情報", authorDescription: "空欄の項目は出力されません。",
     authors: "作者", authorsPlaceholder: "shizuku86, contributor", authorsHelp: "複数の場合はカンマで区切ります。", url: "URL", license: "ライセンス",
     versionTitle: "バージョン", versionDescription: "アドオンとMinecraftの互換性を指定します。", addonVersion: "アドオンバージョン",
@@ -134,6 +140,11 @@ const en: Dictionary = {
     manifestNotice: "manifest.json is generated automatically from the name, description, version, and Minecraft dependencies in properties.", generatedFiles: "Generated files", downloadProject: "Download project ZIP", noManagerWarning: "Without a package manager, initial BP output is included, but automated build configuration is not generated.",
     basicTitle: "Basics", basicDescription: "Information that identifies your add-on.", id: "Add-on ID", idPlaceholder: "my-addon",
     idHelp: "Use only A-Z, a-z, 0-9, and hyphens.", displayName: "Display name", displayNamePlaceholder: "My Add-on",
+    idAvailability: {
+      idle: "Enter an ID.", checking: "Checking the Kairo registry…", available: "Currently available in the Kairo registry.",
+      taken: "This ID is already registered.", reserved: "This ID is reserved for an official Kairo package.",
+      invalid: "Check the ID format.", unknown: "The registry could not be reached. Generation is allowed, but uniqueness cannot be confirmed.",
+    },
     description: "Description", descriptionPlaceholder: "What this add-on does", authorTitle: "Author details", authorDescription: "Empty fields are omitted from the output.",
     authors: "Authors", authorsPlaceholder: "author, contributor", authorsHelp: "Separate multiple authors with commas.", url: "URL", license: "License",
     versionTitle: "Versions", versionDescription: "Set add-on and Minecraft compatibility.", addonVersion: "Add-on version", prerelease: "prerelease",

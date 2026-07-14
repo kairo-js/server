@@ -89,9 +89,23 @@ GET    /api/v1/addons/{name}/{version}/download
 POST   /api/v1/addons
 POST   /api/v1/addons/{name}/versions
 POST   /api/v1/tokens
+GET    /api/v1/addon-ids/{id}/availability
 ```
 
 認証方式、リクエスト・レスポンス形式、公開範囲はAPI仕様の作成時に確定します。
+
+### アドオンIDの一意性
+
+Project BuilderはログインなしでID利用可否APIを呼び出し、Kairoレジストリに登録済み・予約済みのIDと重複していないか確認します。
+
+- 入力停止から400ms後に問い合わせる
+- 比較時は小文字化し、`Example`と`example`を同一IDとして扱う
+- `kairo`と`kairo-database`は公式用の予約IDとして初期登録する
+- 登録済み・予約済みの場合はプロジェクト生成を停止する
+- APIへ接続できない場合は警告を表示し、重複未確認のまま生成を許可する
+- 表示は「Kairoレジストリ上で利用可能」とし、未投稿アドオンを含む世界全体での一意性は保証しない
+- 投稿時にはDBの`normalized_id`一意制約で競合を最終的に拒否する
+- ワールド内での実際のID重複はKairo起動時にも事後検出する
 
 ## 認証方針案
 

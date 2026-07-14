@@ -228,6 +228,12 @@ p { font-size: 17px; line-height: 1.7; }
 .form-field input:focus, .form-field textarea:focus, .module-row > input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #14745818; }
 .form-field small { color: #778179; font-size: 11px; line-height: 1.5; }
 .field-error { color: #a5322b !important; font-size: 11px !important; font-weight: 700; }
+.id-availability { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; }
+.id-availability::before { width: 7px; height: 7px; border-radius: 50%; background: currentColor; content: ""; }
+.id-availability.available { color: #147458; }
+.id-availability.taken, .id-availability.reserved, .id-availability.invalid { color: #a5322b; }
+.id-availability.checking { color: #557164; }
+.id-availability.unknown { color: #8a5b17; }
 .inline-fields, .version-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .inline-fields { grid-template-columns: 1fr 1fr; }
 .engine-version-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }

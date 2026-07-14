@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { SiteHeader } from "../components/site-header";
@@ -69,12 +69,39 @@ export default function DevelopPage() {
   const [packIconPreview, setPackIconPreview] = useState<string>();
   const [submitted, setSubmitted] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [idAvailability, setIDAvailability] = useState<"idle" | "checking" | "available" | "taken" | "reserved" | "invalid" | "unknown">("idle");
   const errors = validatePropertiesForm(form, dictionary.validation);
   const source = generatePropertiesSource(form, options.language);
   const tags = deriveTags(form);
+  const hasRemoteIDConflict = /^[A-Za-z0-9-]+$/.test(form.id) &&
+    (idAvailability === "taken" || idAvailability === "reserved" || idAvailability === "checking" || idAvailability === "idle");
+  const issueCount = Object.keys(errors).length + (hasRemoteIDConflict ? 1 : 0);
+
+  useEffect(() => {
+    if (!form.id || !/^[A-Za-z0-9-]+$/.test(form.id)) {
+      return;
+    }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/v1/addon-ids/${encodeURIComponent(form.id)}/availability`, { signal: controller.signal });
+        const body = (await response.json()) as { status?: typeof idAvailability };
+        setIDAvailability(body.status ?? "unknown");
+      } catch (error: unknown) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setIDAvailability("unknown");
+      }
+    }, 400);
+    return () => { controller.abort(); window.clearTimeout(timer); };
+  }, [form.id]);
 
   function update<K extends keyof PropertiesForm>(key: K, value: PropertiesForm[K]) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function updateAddonID(value: string) {
+    update("id", value);
+    setIDAvailability(!value ? "idle" : /^[A-Za-z0-9-]+$/.test(value) ? "checking" : "invalid");
   }
 
   function updateModule(moduleName: MinecraftModuleType, patch: Partial<PropertiesForm["modules"][MinecraftModuleType]>) {
@@ -132,7 +159,7 @@ export default function DevelopPage() {
   }
 
   async function copySource() {
-    if (Object.keys(errors).length) {
+    if (Object.keys(errors).length || hasRemoteIDConflict) {
       setSubmitted(true);
       return;
     }
@@ -142,7 +169,7 @@ export default function DevelopPage() {
   }
 
   async function downloadProject() {
-    if (Object.keys(errors).length) {
+    if (Object.keys(errors).length || hasRemoteIDConflict) {
       setSubmitted(true);
       return;
     }
@@ -244,9 +271,10 @@ export default function DevelopPage() {
               <div className="section-heading"><span>01</span><div><h2>{messages.basicTitle}</h2><p>{messages.basicDescription}</p></div></div>
               <label className="form-field">
                 <span>{messages.id} <b className="required">{messages.required}</b></span>
-                <input value={form.id} onChange={(event) => update("id", event.target.value)} placeholder={messages.idPlaceholder} aria-invalid={Boolean(visibleError("id"))} />
+                <input value={form.id} onChange={(event) => updateAddonID(event.target.value)} placeholder={messages.idPlaceholder} aria-invalid={Boolean(visibleError("id"))} />
                 <small>{messages.idHelp}</small>
                 {visibleError("id") && <span className="field-error">{visibleError("id")}</span>}
+                {form.id && !visibleError("id") && <span className={`id-availability ${idAvailability}`}>{messages.idAvailability[idAvailability]}</span>}
               </label>
               <label className="form-field">
                 <span>{messages.displayName} <b className="required">{messages.required}</b></span>
@@ -347,7 +375,7 @@ export default function DevelopPage() {
           </form>
 
           <aside className="properties-preview">
-            <div className="preview-heading"><div><span>{messages.preview}</span><strong>properties.{options.language === "typescript" ? "ts" : "js"}</strong></div><span className={`validation-badge ${Object.keys(errors).length ? "invalid" : "valid"}`}>{Object.keys(errors).length ? messages.needsReview(Object.keys(errors).length) : messages.validationOk}</span></div>
+            <div className="preview-heading"><div><span>{messages.preview}</span><strong>properties.{options.language === "typescript" ? "ts" : "js"}</strong></div><span className={`validation-badge ${issueCount ? "invalid" : "valid"}`}>{issueCount ? messages.needsReview(issueCount) : messages.validationOk}</span></div>
             <pre><code>{source}</code></pre>
             <div className="generated-files"><b>{messages.generatedFiles}</b><span>src/ · BP/manifest.json · BP/scripts/ {options.packageManager !== "none" && "· package.json "}{options.usePrettier && "· Prettier "}{options.useESLint && "· ESLint "}{options.useGitHub && "· .gitignore "}{options.includeReadme && "· README.md"}</span></div>
             <div className="preview-actions">

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kairo-js/server/backend/internal/addon"
 	"github.com/kairo-js/server/backend/internal/auth"
 )
 
@@ -25,6 +26,7 @@ func NewRouter(pool *pgxpool.Pool, config Config) http.Handler {
 		store: auth.NewStore(pool), config: config,
 		httpClient: &http.Client{Timeout: 10 * time.Second},
 	}
+	addonIDs := &addonIDHandler{checker: addon.NewStore(pool)}
 
 	mux.HandleFunc("GET /api/health", HealthHandler)
 	mux.HandleFunc("GET /api/health/db", DBHealthHandler(pool))
@@ -34,6 +36,7 @@ func NewRouter(pool *pgxpool.Pool, config Config) http.Handler {
 	mux.HandleFunc("GET /api/v1/auth/github/callback", authAPI.githubCallback)
 	mux.HandleFunc("GET /api/v1/me", authAPI.me)
 	mux.HandleFunc("POST /api/v1/logout", authAPI.logout)
+	mux.HandleFunc("GET /api/v1/addon-ids/{id}/availability", addonIDs.availability)
 
 	return mux
 }
