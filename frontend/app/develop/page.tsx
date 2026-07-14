@@ -185,6 +185,22 @@ export default function DevelopPage() {
 
   const visibleError = (key: string) => submitted ? errors[key] : undefined;
 
+  function moduleRows(modules: ReadonlyArray<MinecraftModuleType>) {
+    return modules.map((moduleName) => {
+      const selection = form.modules[moduleName];
+      const isKairoV2Module = moduleName === "@minecraft/server" || moduleName === "@minecraft/server-ui";
+      return (
+        <div className={`module-row ${selection.selected ? "selected" : ""}`} key={moduleName}>
+          <label className="module-check"><input type="checkbox" checked={selection.selected} onChange={(event) => updateModule(moduleName, { selected: event.target.checked })} /><span>{moduleName}</span></label>
+          <input list={`versions-${moduleName.replaceAll(/[^a-z]/gi, "-")}`} aria-label={`${moduleName} version`} disabled={!selection.selected} value={selection.version} onChange={(event) => updateModule(moduleName, { version: event.target.value })} placeholder={(minecraftModuleVersions[moduleName] ?? ["1.0.0-beta"])[0]} />
+          <datalist id={`versions-${moduleName.replaceAll(/[^a-z]/gi, "-")}`}>{(minecraftModuleVersions[moduleName] ?? []).map((version) => <option value={version} key={version} />)}</datalist>
+          {isKairoV2Module && <small className="module-note">{messages.kairoV2Compatibility}</small>}
+          {visibleError(`module:${moduleName}`) && <span className="field-error module-error">{visibleError(`module:${moduleName}`)}</span>}
+        </div>
+      );
+    });
+  }
+
   if (step === 1) {
     return (
       <div className="site-shell">
@@ -317,22 +333,17 @@ export default function DevelopPage() {
               <div className="section-heading"><span>04</span><div><h2>{messages.minecraftTitle}</h2><p>{messages.minecraftDescription}</p></div></div>
               <div className="module-list">
                 {minecraftModuleGroups.map((group) => (
-                  <section className={`module-group ${group.key}`} key={group.key}>
-                    <header><div><b>{messages.minecraftGroups[group.key].title}</b><p>{messages.minecraftGroups[group.key].description}</p></div><span>{messages.minecraftGroups[group.key].badge}</span></header>
-                    {group.modules.map((moduleName) => {
-                      const selection = form.modules[moduleName];
-                      const isKairoV2Module = moduleName === "@minecraft/server" || moduleName === "@minecraft/server-ui";
-                      return (
-                        <div className={`module-row ${selection.selected ? "selected" : ""}`} key={moduleName}>
-                          <label className="module-check"><input type="checkbox" checked={selection.selected} onChange={(event) => updateModule(moduleName, { selected: event.target.checked })} /><span>{moduleName}</span></label>
-                          <input list={`versions-${moduleName.replaceAll(/[^a-z]/gi, "-")}`} aria-label={`${moduleName} version`} disabled={!selection.selected} value={selection.version} onChange={(event) => updateModule(moduleName, { version: event.target.value })} placeholder={(minecraftModuleVersions[moduleName] ?? ["1.0.0-beta"])[0]} />
-                          <datalist id={`versions-${moduleName.replaceAll(/[^a-z]/gi, "-")}`}>{(minecraftModuleVersions[moduleName] ?? []).map((version) => <option value={version} key={version} />)}</datalist>
-                          {isKairoV2Module && <small className="module-note">{messages.kairoV2Compatibility}</small>}
-                          {visibleError(`module:${moduleName}`) && <span className="field-error module-error">{visibleError(`module:${moduleName}`)}</span>}
-                        </div>
-                      );
-                    })}
-                  </section>
+                  group.key === "experimental" ? (
+                    <details className="module-group experimental" key={group.key}>
+                      <summary><div><b>{messages.minecraftGroups.experimental.title}</b><p>{messages.minecraftGroups.experimental.description}</p></div><span>{messages.minecraftGroups.experimental.badge}</span></summary>
+                      <div className="module-group-rows">{moduleRows(group.modules)}</div>
+                    </details>
+                  ) : (
+                    <section className="module-group stable" key={group.key}>
+                      <header><div><b>{messages.minecraftGroups.stable.title}</b><p>{messages.minecraftGroups.stable.description}</p></div><span>{messages.minecraftGroups.stable.badge}</span></header>
+                      {moduleRows(group.modules)}
+                    </section>
+                  )
                 ))}
               </div>
             </section>

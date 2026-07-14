@@ -11,8 +11,8 @@ export const minecraftModules = [
 ] as const;
 
 export const minecraftModuleVersions: Partial<Record<MinecraftModuleType, string[]>> = {
-  "@minecraft/server": ["2.8.0", "2.7.0", "2.6.0", "2.5.0", "2.4.0", "2.3.0", "2.2.0", "2.1.0", "2.0.0"],
-  "@minecraft/server-ui": ["2.1.0", "2.0.0"],
+  "@minecraft/server": ["3.0.0-alpha", "2.9.0-beta", "2.8.0", "2.7.0", "2.6.0", "2.5.0", "2.4.0", "2.3.0", "2.2.0", "2.1.0", "2.0.0", "beta"],
+  "@minecraft/server-ui": ["3.0.0-alpha", "2.2.0-beta", "2.1.0", "2.0.0", "beta"],
   "@minecraft/server-gametest": ["1.0.0-beta"],
   "@minecraft/server-editor": ["1.0.0-beta"],
   "@minecraft/server-net": ["1.0.0-beta"],
@@ -25,10 +25,8 @@ export const minecraftModuleVersions: Partial<Record<MinecraftModuleType, string
 export type MinecraftModuleType = (typeof minecraftModules)[number];
 
 export const minecraftModuleGroups = [
-  { key: "primary", modules: ["@minecraft/server", "@minecraft/server-ui"] },
-  { key: "advanced", modules: ["@minecraft/server-admin", "@minecraft/server-gametest"] },
-  { key: "bds", modules: ["@minecraft/server-net"] },
-  { key: "experimental", modules: ["@minecraft/server-editor", "@minecraft/debug-utilities", "@minecraft/diagnostics", "@minecraft/server-graphics"] },
+  { key: "stable", modules: ["@minecraft/server", "@minecraft/server-ui"] },
+  { key: "experimental", modules: ["@minecraft/server-admin", "@minecraft/server-gametest", "@minecraft/server-net", "@minecraft/server-editor", "@minecraft/debug-utilities", "@minecraft/diagnostics", "@minecraft/server-graphics"] },
 ] as const satisfies ReadonlyArray<{ key: string; modules: ReadonlyArray<MinecraftModuleType> }>;
 
 export type ModuleSelection = Record<
@@ -152,7 +150,7 @@ export function deriveTags(form: PropertiesForm) {
   const selectedVersions = minecraftModules
     .filter((moduleName) => form.modules[moduleName].selected)
     .map((moduleName) => form.modules[moduleName].version);
-  const releaseTag = selectedVersions.some((version) => /beta/i.test(version))
+  const releaseTag = selectedVersions.some((version) => /(?:alpha|beta)/i.test(version))
     ? "experimental"
     : "stable";
   const customTags = form.customTags

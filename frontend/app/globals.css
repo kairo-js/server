@@ -247,14 +247,15 @@ p { font-size: 17px; line-height: 1.7; }
 .full-section { grid-template-columns: 1fr; }
 .module-list { display: grid; gap: 16px; }
 .module-group { display: grid; gap: 8px; padding: 12px; border: 1px solid #dce2dd; border-radius: 10px; background: #f9faf8; }
-.module-group > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 3px 2px 7px; }
-.module-group > header div { display: grid; gap: 3px; }
-.module-group > header b { font-size: 13px; }
-.module-group > header p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
-.module-group > header > span { flex: 0 0 auto; padding: 4px 7px; color: #557164; background: #e5eee9; border-radius: 4px; font-size: 8px; font-weight: 900; letter-spacing: .07em; }
-.module-group.advanced > header > span { color: #725210; background: #f4e9c9; }
-.module-group.bds > header > span { color: #365e7d; background: #ddebf5; }
-.module-group.experimental > header > span { color: #8a4239; background: #f5dfdc; }
+.module-group > header, .module-group > summary { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 3px 2px 7px; }
+.module-group > summary { cursor: pointer; list-style: none; }
+.module-group > summary::-webkit-details-marker { display: none; }
+.module-group > header div, .module-group > summary div { display: grid; gap: 3px; }
+.module-group > header b, .module-group > summary b { font-size: 13px; }
+.module-group > header p, .module-group > summary p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+.module-group > header > span, .module-group > summary > span { flex: 0 0 auto; padding: 4px 7px; color: #557164; background: #e5eee9; border-radius: 4px; font-size: 8px; font-weight: 900; letter-spacing: .07em; }
+.module-group.experimental > summary > span { color: #8a4239; background: #f5dfdc; }
+.module-group-rows { display: grid; gap: 8px; padding-top: 7px; }
 .module-row { display: grid; grid-template-columns: minmax(0, 1fr) 150px; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid #e0e4e0; border-radius: 8px; background: #fafbf9; }
 .module-row.selected { border-color: #b8d1c3; background: #f1f8f4; }
 .module-check { display: flex; min-width: 0; align-items: center; gap: 10px; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; }

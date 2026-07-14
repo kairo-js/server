@@ -33,7 +33,7 @@ export type Dictionary = {
     versionTitle: string; versionDescription: string; addonVersion: string; prerelease: string;
     build: string; engineVersion: string; minecraftTitle: string; minecraftDescription: string;
     kairoV2Compatibility: string;
-    minecraftGroups: Record<"primary" | "advanced" | "bds" | "experimental", { title: string; description: string; badge: string }>;
+    minecraftGroups: Record<"stable" | "experimental", { title: string; description: string; badge: string }>;
     kairoTitle: string; kairoDescription: string; tagsTitle: string; tagsDescription: string;
     automaticTag: string; customTags: string; customTagsPlaceholder: string; customTagsHelp: string;
     preview: string; needsReview: (count: number) => string; validationOk: string; copy: string;
@@ -90,10 +90,8 @@ const ja: Dictionary = {
     minecraftDescription: "使用するScript APIモジュールを複数選択できます。", kairoTitle: "Kairo依存関係", kairoDescription: "必須依存として自動的に追加されます。",
     kairoV2Compatibility: "Minecraft側では1.xも指定できますが、Kairoは2.0.0以上に対応しています。",
     minecraftGroups: {
-      primary: { title: "主要モジュール", description: "多くのKairoアドオンで利用する基本APIです。", badge: "RECOMMENDED" },
-      advanced: { title: "上級者向け", description: "管理機能やGameTestを扱う高度な開発向けです。", badge: "ADVANCED" },
-      bds: { title: "BDS向け", description: "Bedrock Dedicated Server上でのネットワーク機能に使用します。", badge: "BDS" },
-      experimental: { title: "開発段階", description: "Minecraft側でも開発中で、一般的な利用はまだ限定的です。", badge: "EXPERIMENTAL" },
+      stable: { title: "安定版", description: "安定版を選択できるMinecraft Script APIモジュールです。", badge: "STABLE" },
+      experimental: { title: "Experimental", description: "現在はpre-release版のみ利用できるモジュールです。必要な場合に展開してください。", badge: "PRE-RELEASE" },
     },
     tagsTitle: "タグ", tagsDescription: "システムタグは依存関係から自動判定されます。", automaticTag: "自動タグ", customTags: "カスタムタグ",
     customTagsPlaceholder: "utility, world-generation", customTagsHelp: "カンマ区切り。official、approved、stable、experimentalはシステムが管理します。",
@@ -152,10 +150,8 @@ const en: Dictionary = {
     minecraftDescription: "Select one or more Script API modules used by your add-on.", kairoTitle: "Kairo dependencies", kairoDescription: "These are automatically included as required dependencies.",
     kairoV2Compatibility: "Minecraft also accepts 1.x versions, but Kairo supports version 2.0.0 and later.",
     minecraftGroups: {
-      primary: { title: "Primary modules", description: "Core APIs used by most Kairo add-ons.", badge: "RECOMMENDED" },
-      advanced: { title: "Advanced", description: "For experienced developers working with administration features or GameTest.", badge: "ADVANCED" },
-      bds: { title: "For BDS", description: "Networking features for Bedrock Dedicated Server deployments.", badge: "BDS" },
-      experimental: { title: "In development", description: "Still under development in Minecraft and not yet widely used.", badge: "EXPERIMENTAL" },
+      stable: { title: "Stable", description: "Minecraft Script API modules with stable versions available.", badge: "STABLE" },
+      experimental: { title: "Experimental", description: "These modules currently offer pre-release versions only. Expand when needed.", badge: "PRE-RELEASE" },
     },
     tagsTitle: "Tags", tagsDescription: "System tags are derived automatically from dependencies.", automaticTag: "Automatic tag", customTags: "Custom tags",
     customTagsPlaceholder: "utility, world-generation", customTagsHelp: "Comma-separated. official, approved, stable, and experimental are managed by the system.",
