@@ -342,6 +342,28 @@ p { font-size: 17px; line-height: 1.7; }
 .pack-icon-preview span { color: var(--muted); font-size: 11px; }
 .generated-files { display: grid; gap: 5px; padding: 12px 20px; color: #a9bcb2; background: #18271f; border-top: 1px solid #2b3b32; font-size: 10px; line-height: 1.5; }
 .generated-files b { color: #d7e5dd; font-size: 10px; }
+.project-preview-page { max-width: 1280px; }
+.repository-preview { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 600px; overflow: hidden; border: 1px solid #d5ddd7; border-radius: 12px; background: #fff; box-shadow: 0 16px 44px #1f382a0d; }
+.file-tree { min-width: 0; border-right: 1px solid #d5ddd7; background: #f7f9f7; }
+.file-tree > header { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; padding: 0 15px; border-bottom: 1px solid #d5ddd7; background: #eef3ef; }
+.file-tree > header b { overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.file-tree > header span { flex: 0 0 auto; color: var(--muted); font-size: 10px; }
+.file-tree > div { padding: 8px; }
+.file-tree button { display: block; width: 100%; padding-top: 8px; padding-right: 10px; padding-bottom: 8px; overflow: hidden; border: 0; border-radius: 6px; color: #27342d; background: transparent; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; text-align: left; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.file-tree button:hover { background: #e8eee9; }
+.file-tree button.active { color: var(--accent-dark); background: #dcebe2; font-weight: 800; }
+.file-tree button span { color: #819087; }
+.file-preview { display: grid; min-width: 0; grid-template-rows: 52px minmax(0, 1fr); background: #fff; }
+.file-preview > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 16px; border-bottom: 1px solid #d5ddd7; }
+.file-preview > header code { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.file-preview > header button { flex: 0 0 auto; padding: 7px 10px; border: 1px solid #c7d0c9; border-radius: 6px; color: var(--accent-dark); background: #fff; font: inherit; font-size: 10px; font-weight: 800; cursor: pointer; }
+.file-preview > pre { max-height: 700px; margin: 0; padding: 20px; overflow: auto; background: #17231c; color: #dbe8df; font-size: 12px; line-height: 1.65; tab-size: 2; }
+.binary-preview { display: grid; min-height: 400px; place-content: center; justify-items: center; gap: 16px; color: var(--muted); font-size: 12px; }
+.binary-preview img { border-radius: 14px; box-shadow: 0 8px 30px #1d30251f; image-rendering: auto; }
+.project-download-bar { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 18px; padding: 18px 20px; border: 1px solid #cbd9cf; border-radius: 11px; background: #f0f7f3; }
+.project-download-bar > div { display: grid; gap: 4px; }
+.project-download-bar b { font-size: 14px; }
+.project-download-bar span { color: var(--muted); font-size: 11px; }
 
 @media (max-width: 760px) {
   .site-header { width: min(100% - 28px, 1180px); min-height: 68px; }
@@ -358,6 +380,7 @@ p { font-size: 17px; line-height: 1.7; }
   .builder-layout { grid-template-columns: 1fr; }
   .properties-preview { position: static; }
   .platform-choice-grid { grid-template-columns: 1fr; }
+  .repository-preview { grid-template-columns: 220px minmax(0, 1fr); }
   .choice-grid.four, .choice-grid.three { grid-template-columns: 1fr 1fr; }
 }
 
@@ -384,4 +407,7 @@ p { font-size: 17px; line-height: 1.7; }
   .dependency-row { grid-template-columns: 1fr 34px; }
   .dependency-row label { grid-column: 1; }
   .dependency-row > button { grid-column: 2; grid-row: 1 / 3; }
+  .repository-preview { grid-template-columns: 1fr; }
+  .file-tree { max-height: 260px; overflow: auto; border-right: 0; border-bottom: 1px solid #d5ddd7; }
+  .project-download-bar { align-items: stretch; flex-direction: column; }
 }

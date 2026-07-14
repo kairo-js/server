@@ -16,7 +16,7 @@ export type Dictionary = {
   };
   develop: {
     eyebrow: string; title: string; introBefore: string; introFile: string; introAfter: string;
-    stepEnvironment: string; stepAddon: string; environmentTitle: string; environmentDescription: string;
+    stepEnvironment: string; stepAddon: string; stepPreview: string; environmentTitle: string; environmentDescription: string;
     platformQuestion: string; platformDescription: string;
     platforms: Record<"windows" | "mobile" | "mac-linux", { title: string; description: string; badge: string }>;
     mobileLanguageNotice: string; mobileGitHubNotice: string;
@@ -27,7 +27,9 @@ export type Dictionary = {
     toolingQuestion: string; toolingDescription: string; prettierDescription: string; eslintDescription: string; toolingRequiresManager: string;
     projectSettings: string; packIcon: string; packIconHelp: string; chooseIcon: string; readme: string; readmeDescription: string;
     packIconPreview: string; dependencyId: string; dependencyVersion: string; addDependency: string; removeDependency: string;
-    manifestNotice: string; generatedFiles: string; downloadProject: string; noManagerWarning: string;
+    manifestNotice: string; generatedFiles: string; downloadProject: string; previewProject: string; noManagerWarning: string;
+    projectPreviewTitle: string; projectPreviewDescription: string; backToAddon: string; fileTree: string; files: string;
+    copyFile: string; binaryFile: string; readyToDownload: string; downloadDescription: string;
     required: string; basicTitle: string; basicDescription: string; id: string; idPlaceholder: string;
     idHelp: string; displayName: string; displayNamePlaceholder: string; description: string;
     idAvailability: Record<"idle" | "checking" | "available" | "intent" | "taken" | "reserved" | "invalid" | "unknown", string>;
@@ -70,7 +72,7 @@ const ja: Dictionary = {
   develop: {
     eyebrow: "DEVELOPMENT SUPPORT", title: "Kairo Project Builder", introBefore: "フォームを埋めるだけで、Kairoアドオン用の",
     introFile: "scripts/properties.js", introAfter: "を生成できます。ログインは必要ありません。", required: "必須",
-    stepEnvironment: "開発環境", stepAddon: "アドオン設定", environmentTitle: "開発環境を選択", environmentDescription: "選択内容に合わせてプロジェクト構成と設定ファイルを生成します。",
+    stepEnvironment: "開発環境", stepAddon: "アドオン設定", stepPreview: "全体プレビュー", environmentTitle: "開発環境を選択", environmentDescription: "選択内容に合わせてプロジェクト構成と設定ファイルを生成します。",
     platformQuestion: "どの端末で開発しますか？", platformDescription: "利用できる開発ツールと、Minecraft上での確認方法が端末によって異なります。",
     platforms: {
       windows: { title: "Windows", description: "MinecraftとNode.jsを同じPCで利用でき、開発から動作確認まで行えます。", badge: "推奨" },
@@ -85,7 +87,8 @@ const ja: Dictionary = {
     toolingQuestion: "コード品質ツール", toolingDescription: "フォーマットと静的解析の設定を必要に応じて追加します。", prettierDescription: "コードフォーマット設定とformat scriptsを追加します。", eslintDescription: "言語に対応した静的解析設定とlint scriptを追加します。", toolingRequiresManager: "PrettierとESLintを利用するにはnpmまたはpnpmを選択してください。",
     projectSettings: "プロジェクト生成設定", packIcon: "パックアイコン", packIconHelp: "PNG画像をpack_icon.pngとしてプロジェクトとBPへ追加します。", chooseIcon: "PNGを選択", readme: "README.mdを生成", readmeDescription: "アドオン名、説明、セットアップ方法を含むREADMEを追加します。",
     packIconPreview: "パックアイコンのプレビュー", dependencyId: "依存ID", dependencyVersion: "バージョン条件", addDependency: "依存関係を追加", removeDependency: "依存関係を削除",
-    manifestNotice: "manifest.jsonはpropertiesの名前、説明、バージョン、Minecraft依存関係から自動生成されます。", generatedFiles: "生成ファイル", downloadProject: "プロジェクトZIPを保存", noManagerWarning: "パッケージマネージャーを使わない場合、初期のBP成果物は生成されますが、自動ビルド設定は含まれません。",
+    manifestNotice: "manifest.jsonはpropertiesの名前、説明、バージョン、Minecraft依存関係から自動生成されます。", generatedFiles: "生成ファイル", downloadProject: "プロジェクトZIPを保存", previewProject: "プロジェクト全体を確認", noManagerWarning: "パッケージマネージャーを使わない場合、初期のBP成果物は生成されますが、自動ビルド設定は含まれません。",
+    projectPreviewTitle: "プロジェクト全体を確認", projectPreviewDescription: "生成されるファイルを選択して内容を確認できます。問題がなければZIPを保存してください。", backToAddon: "アドオン設定へ戻る", fileTree: "生成ファイル一覧", files: "files", copyFile: "ファイルをコピー", binaryFile: "このバイナリファイルはテキスト表示できません。", readyToDownload: "プロジェクトの準備ができました", downloadDescription: "このプレビューの内容をそのままZIPファイルにまとめます。",
     basicTitle: "基本情報", basicDescription: "アドオンを識別する情報です。", id: "アドオンID", idPlaceholder: "my-addon",
     idHelp: "A-Z、a-z、0-9、ハイフンのみ使用できます。", displayName: "表示名", displayNamePlaceholder: "My Add-on",
     idAvailability: {
@@ -138,7 +141,7 @@ const en: Dictionary = {
   develop: {
     eyebrow: "DEVELOPMENT SUPPORT", title: "Kairo Project Builder", introBefore: "Complete the form to generate",
     introFile: "scripts/properties.js", introAfter: "for your Kairo add-on. No account is required.", required: "Required",
-    stepEnvironment: "Environment", stepAddon: "Add-on setup", environmentTitle: "Choose your development environment", environmentDescription: "The project structure and configuration files are generated from your choices.",
+    stepEnvironment: "Environment", stepAddon: "Add-on setup", stepPreview: "Full preview", environmentTitle: "Choose your development environment", environmentDescription: "The project structure and configuration files are generated from your choices.",
     platformQuestion: "Which device will you develop on?", platformDescription: "Available development tools and Minecraft testing options depend on your device.",
     platforms: {
       windows: { title: "Windows", description: "Run Minecraft and Node.js on the same PC, from development through testing.", badge: "RECOMMENDED" },
@@ -153,7 +156,8 @@ const en: Dictionary = {
     toolingQuestion: "Code quality tools", toolingDescription: "Optionally add formatting and static analysis configuration.", prettierDescription: "Add formatting configuration and format scripts.", eslintDescription: "Add language-aware static analysis and a lint script.", toolingRequiresManager: "Choose npm or pnpm to use Prettier and ESLint.",
     projectSettings: "Project generation", packIcon: "Pack icon", packIconHelp: "Add a PNG image as pack_icon.png in the project and BP.", chooseIcon: "Choose PNG", readme: "Generate README.md", readmeDescription: "Add a README with the add-on name, description, and setup instructions.",
     packIconPreview: "Pack icon preview", dependencyId: "Dependency ID", dependencyVersion: "Version range", addDependency: "Add dependency", removeDependency: "Remove dependency",
-    manifestNotice: "manifest.json is generated automatically from the name, description, version, and Minecraft dependencies in properties.", generatedFiles: "Generated files", downloadProject: "Download project ZIP", noManagerWarning: "Without a package manager, initial BP output is included, but automated build configuration is not generated.",
+    manifestNotice: "manifest.json is generated automatically from the name, description, version, and Minecraft dependencies in properties.", generatedFiles: "Generated files", downloadProject: "Download project ZIP", previewProject: "Preview full project", noManagerWarning: "Without a package manager, initial BP output is included, but automated build configuration is not generated.",
+    projectPreviewTitle: "Preview the full project", projectPreviewDescription: "Select any generated file to inspect its contents, then download the ZIP when ready.", backToAddon: "Back to add-on setup", fileTree: "Generated file tree", files: "files", copyFile: "Copy file", binaryFile: "This binary file cannot be displayed as text.", readyToDownload: "Your project is ready", downloadDescription: "The files shown in this preview will be packaged into the ZIP.",
     basicTitle: "Basics", basicDescription: "Information that identifies your add-on.", id: "Add-on ID", idPlaceholder: "my-addon",
     idHelp: "Use only A-Z, a-z, 0-9, and hyphens.", displayName: "Display name", displayNamePlaceholder: "My Add-on",
     idAvailability: {

@@ -22,6 +22,7 @@ import {
   createProjectZip,
   type DevelopmentPlatform,
   type PackageManager,
+  type ProjectFile,
   type ProjectOptions,
   type SourceLanguage,
 } from "./project-builder";
@@ -61,7 +62,7 @@ export default function DevelopPage() {
   const dictionary = getDictionary(locale);
   const messages = dictionary.develop;
   const [form, setForm] = useState<PropertiesForm>(initialPropertiesForm);
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [options, setOptions] = useState<ProjectOptions>({
     platform: "windows", language: "typescript", runtime: "node", useGitHub: true, packageManager: "pnpm",
     usePrettier: true, useESLint: true, includeReadme: true,
@@ -70,6 +71,8 @@ export default function DevelopPage() {
   const [packIconPreview, setPackIconPreview] = useState<string>();
   const [submitted, setSubmitted] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([]);
+  const [selectedFilePath, setSelectedFilePath] = useState("");
   const [idAvailability, setIDAvailability] = useState<"idle" | "checking" | "available" | "intent" | "taken" | "reserved" | "invalid" | "unknown">("idle");
   const errors = validatePropertiesForm(form, dictionary.validation);
   const source = generatePropertiesSource(form, options.language);
@@ -178,12 +181,20 @@ export default function DevelopPage() {
     window.setTimeout(() => setCopied(false), 1800);
   }
 
-  async function downloadProject() {
+  async function openProjectPreview() {
     if (Object.keys(errors).length || hasRemoteIDConflict) {
       setSubmitted(true);
       return;
     }
     const icon = packIcon ? new Uint8Array(await packIcon.arrayBuffer()) : undefined;
+    const files = buildProjectFiles(form, options, icon);
+    setProjectFiles(files);
+    setSelectedFilePath(files.find((file) => file.path === `src/properties.${options.language === "typescript" ? "ts" : "js"}`)?.path ?? files[0]?.path ?? "");
+    setStep(3);
+  }
+
+  async function downloadProject() {
+    if (!projectFiles.length) return;
     try {
       await fetch("/api/v1/development-projects/generated", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -195,7 +206,7 @@ export default function DevelopPage() {
         }),
       });
     } catch { /* Statistics must never prevent local project generation. */ }
-    const blob = createProjectZip(buildProjectFiles(form, options, icon));
+    const blob = createProjectZip(projectFiles);
     const href = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = href;
@@ -205,6 +216,14 @@ export default function DevelopPage() {
   }
 
   const visibleError = (key: string) => submitted ? errors[key] : undefined;
+  const selectedProjectFile = projectFiles.find((file) => file.path === selectedFilePath);
+
+  async function copyProjectFile() {
+    if (!selectedProjectFile || typeof selectedProjectFile.data !== "string") return;
+    await navigator.clipboard.writeText(selectedProjectFile.data);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  }
 
   function moduleRows(modules: ReadonlyArray<MinecraftModuleType>) {
     return modules.map((moduleName) => {
@@ -234,7 +253,7 @@ export default function DevelopPage() {
       <div className="site-shell">
         <SiteHeader locale={locale} />
         <main className="develop-page wizard-page">
-          <div className="wizard-steps"><span className="active">1<span>{messages.stepEnvironment}</span></span><i /><span>2<span>{messages.stepAddon}</span></span></div>
+          <div className="wizard-steps"><span className="active">1<span>{messages.stepEnvironment}</span></span><i /><span>2<span>{messages.stepAddon}</span></span><i /><span>3<span>{messages.stepPreview}</span></span></div>
           <header className="develop-intro compact"><p className="eyebrow">{messages.eyebrow}</p><h1>{messages.environmentTitle}</h1><p>{messages.environmentDescription}</p></header>
           <div className="environment-form">
             <section className="choice-section">
@@ -310,11 +329,41 @@ export default function DevelopPage() {
     );
   }
 
+  if (step === 3) {
+    return (
+      <div className="site-shell">
+        <SiteHeader locale={locale} />
+        <main className="develop-page project-preview-page">
+          <div className="wizard-steps"><span className="done">1<span>{messages.stepEnvironment}</span></span><i /><span className="done">2<span>{messages.stepAddon}</span></span><i /><span className="active">3<span>{messages.stepPreview}</span></span></div>
+          <header className="develop-intro compact">
+            <p className="eyebrow">{messages.eyebrow}</p><h1>{messages.projectPreviewTitle}</h1><p>{messages.projectPreviewDescription}</p>
+            <button className="back-link" type="button" onClick={() => setStep(2)}>← {messages.backToAddon}</button>
+          </header>
+          <div className="repository-preview">
+            <aside className="file-tree" aria-label={messages.fileTree}>
+              <header><b>{form.id}</b><span>{projectFiles.length} {messages.files}</span></header>
+              <div>{projectFiles.map((file) => {
+                const parts = file.path.split("/");
+                const name = parts.pop();
+                return <button className={selectedFilePath === file.path ? "active" : ""} style={{ paddingLeft: `${14 + parts.length * 14}px` }} type="button" onClick={() => setSelectedFilePath(file.path)} key={file.path}><span>{parts.length ? `${parts.join("/")}/` : ""}</span>{name}</button>;
+              })}</div>
+            </aside>
+            <section className="file-preview">
+              <header><code>{selectedProjectFile?.path}</code>{selectedProjectFile && typeof selectedProjectFile.data === "string" && <button type="button" onClick={copyProjectFile}>{copied ? messages.copied : messages.copyFile}</button>}</header>
+              {selectedProjectFile && typeof selectedProjectFile.data === "string" ? <pre><code>{selectedProjectFile.data}</code></pre> : selectedProjectFile?.path.endsWith(".png") && packIconPreview ? <div className="binary-preview"><Image src={packIconPreview} alt={messages.packIconPreview} width={192} height={192} unoptimized /><span>{selectedProjectFile.path}</span></div> : <div className="binary-preview"><span>{messages.binaryFile}</span></div>}
+            </section>
+          </div>
+          <div className="project-download-bar"><div><b>{messages.readyToDownload}</b><span>{messages.downloadDescription}</span></div><button className="button primary" type="button" onClick={downloadProject}>{messages.downloadProject}</button></div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="site-shell">
       <SiteHeader locale={locale} />
       <main className="develop-page">
-        <div className="wizard-steps"><span className="done">1<span>{messages.stepEnvironment}</span></span><i /><span className="active">2<span>{messages.stepAddon}</span></span></div>
+        <div className="wizard-steps"><span className="done">1<span>{messages.stepEnvironment}</span></span><i /><span className="active">2<span>{messages.stepAddon}</span></span><i /><span>3<span>{messages.stepPreview}</span></span></div>
         <header className="develop-intro">
           <p className="eyebrow">{messages.eyebrow}</p>
           <h1>{messages.title}</h1>
@@ -432,7 +481,7 @@ export default function DevelopPage() {
             <div className="generated-files"><b>{messages.generatedFiles}</b><span>src/ · BP/manifest.json · BP/scripts/ {options.packageManager !== "none" && "· package.json "}{options.usePrettier && "· Prettier "}{options.useESLint && "· ESLint "}{options.useGitHub && "· .gitignore "}{options.includeReadme && "· README.md"}</span></div>
             <div className="preview-actions">
               <button className="button secondary" type="button" onClick={copySource}>{copied ? messages.copied : messages.copy}</button>
-              <button className="button primary" type="button" onClick={downloadProject}>{messages.downloadProject}</button>
+              <button className="button primary" type="button" onClick={openProjectPreview}>{messages.previewProject}</button>
             </div>
             <p className="preview-note">{messages.privacy}</p>
           </aside>
