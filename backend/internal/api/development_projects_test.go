@@ -25,7 +25,7 @@ func TestDevelopmentProjectGeneratedRecordsNormalizedIntentAndOptions(t *testing
 	recorder := &fakeProjectGenerationRecorder{}
 	handler := &developmentProjectHandler{recorder: recorder}
 	request := httptest.NewRequest(http.MethodPost, "/api/v1/development-projects/generated", strings.NewReader(`{
-		"addonId":"My-Addon","language":"typescript","runtime":"node","githubEnabled":true,
+		"addonId":"My-Addon","platform":"windows","language":"typescript","runtime":"node","githubEnabled":true,
 		"packageManager":"pnpm","prettierEnabled":true,"eslintEnabled":true,"readmeEnabled":false
 	}`))
 	response := httptest.NewRecorder()
@@ -35,7 +35,7 @@ func TestDevelopmentProjectGeneratedRecordsNormalizedIntentAndOptions(t *testing
 	if response.Code != http.StatusNoContent {
 		t.Fatalf("status = %d, body = %s", response.Code, response.Body.String())
 	}
-	if recorder.event.NormalizedID != "my-addon" || recorder.event.Language != "typescript" || recorder.event.PackageManager != "pnpm" {
+	if recorder.event.NormalizedID != "my-addon" || recorder.event.Platform != "windows" || recorder.event.Language != "typescript" || recorder.event.PackageManager != "pnpm" {
 		t.Fatalf("unexpected event: %+v", recorder.event)
 	}
 	if len(recorder.event.AnonymousKeyHash) != 64 {
@@ -49,7 +49,7 @@ func TestDevelopmentProjectGeneratedRecordsNormalizedIntentAndOptions(t *testing
 func TestDevelopmentProjectGeneratedRejectsInvalidOptions(t *testing.T) {
 	recorder := &fakeProjectGenerationRecorder{}
 	handler := &developmentProjectHandler{recorder: recorder}
-	request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"addonId":"bad_id","language":"rust","runtime":"bun","packageManager":"yarn"}`))
+	request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"addonId":"bad_id","platform":"mobile","language":"rust","runtime":"bun","packageManager":"yarn"}`))
 	response := httptest.NewRecorder()
 
 	handler.generated(response, request)
@@ -65,7 +65,7 @@ func TestDevelopmentProjectGeneratedRejectsInvalidOptions(t *testing.T) {
 func TestDevelopmentProjectGeneratedDoesNotHideStoreFailure(t *testing.T) {
 	handler := &developmentProjectHandler{recorder: &fakeProjectGenerationRecorder{err: errors.New("database unavailable")}}
 	request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{
-		"addonId":"example","language":"javascript","runtime":"node","githubEnabled":false,
+		"addonId":"example","platform":"mobile","language":"javascript","runtime":"none","githubEnabled":false,
 		"packageManager":"none","prettierEnabled":false,"eslintEnabled":false,"readmeEnabled":true
 	}`))
 	response := httptest.NewRecorder()

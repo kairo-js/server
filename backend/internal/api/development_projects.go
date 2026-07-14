@@ -23,6 +23,7 @@ type developmentProjectHandler struct{ recorder projectGenerationRecorder }
 
 type developmentProjectRequest struct {
 	AddonID         string `json:"addonId"`
+	Platform        string `json:"platform"`
 	Language        string `json:"language"`
 	Runtime         string `json:"runtime"`
 	GitHubEnabled   bool   `json:"githubEnabled"`
@@ -46,7 +47,7 @@ func (h *developmentProjectHandler) generated(w http.ResponseWriter, r *http.Req
 	hash := sha256.Sum256([]byte(key))
 	event := addon.ProjectGeneration{
 		NormalizedID: strings.ToLower(body.AddonID), AnonymousKeyHash: hex.EncodeToString(hash[:]),
-		Language: body.Language, Runtime: body.Runtime, PackageManager: body.PackageManager,
+		Platform: body.Platform, Language: body.Language, Runtime: body.Runtime, PackageManager: body.PackageManager,
 		GitHubEnabled: body.GitHubEnabled, PrettierEnabled: body.PrettierEnabled,
 		ESLintEnabled: body.ESLintEnabled, ReadmeEnabled: body.ReadmeEnabled,
 	}
@@ -61,7 +62,10 @@ func (h *developmentProjectHandler) generated(w http.ResponseWriter, r *http.Req
 func validProjectGeneration(body developmentProjectRequest) bool {
 	validLanguage := body.Language == "javascript" || body.Language == "typescript"
 	validManager := body.PackageManager == "npm" || body.PackageManager == "pnpm" || body.PackageManager == "none"
-	return addonIDPattern.MatchString(body.AddonID) && validLanguage && body.Runtime == "node" && validManager
+	validPlatform := body.Platform == "windows" || body.Platform == "mobile" || body.Platform == "mac-linux"
+	validRuntime := body.Runtime == "node" || body.Runtime == "none"
+	validCombination := body.Platform != "mobile" || (body.Language == "javascript" && body.Runtime == "none" && !body.GitHubEnabled && body.PackageManager == "none" && !body.PrettierEnabled && !body.ESLintEnabled)
+	return addonIDPattern.MatchString(body.AddonID) && validPlatform && validLanguage && validRuntime && validManager && validCombination
 }
 
 func readOrCreateAnonymousKey(w http.ResponseWriter, r *http.Request) string {

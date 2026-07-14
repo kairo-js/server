@@ -19,8 +19,8 @@ const (
 )
 
 type ProjectGeneration struct {
-	NormalizedID, AnonymousKeyHash, Language, Runtime, PackageManager string
-	GitHubEnabled, PrettierEnabled, ESLintEnabled, ReadmeEnabled      bool
+	NormalizedID, AnonymousKeyHash, Platform, Language, Runtime, PackageManager string
+	GitHubEnabled, PrettierEnabled, ESLintEnabled, ReadmeEnabled                bool
 }
 
 type IDChecker interface {
@@ -86,8 +86,8 @@ func (s *Store) RecordProjectGeneration(ctx context.Context, event ProjectGenera
 	}
 	if _, err := tx.Exec(ctx, `
 		INSERT INTO project_generation_events
-		(language, runtime, github_enabled, package_manager, prettier_enabled, eslint_enabled, readme_enabled)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)`, event.Language, event.Runtime, event.GitHubEnabled,
+		(platform, language, runtime, github_enabled, package_manager, prettier_enabled, eslint_enabled, readme_enabled)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, event.Platform, event.Language, event.Runtime, event.GitHubEnabled,
 		event.PackageManager, event.PrettierEnabled, event.ESLintEnabled, event.ReadmeEnabled); err != nil {
 		return fmt.Errorf("record project generation statistics: %w", err)
 	}

@@ -17,8 +17,11 @@ export type Dictionary = {
   develop: {
     eyebrow: string; title: string; introBefore: string; introFile: string; introAfter: string;
     stepEnvironment: string; stepAddon: string; environmentTitle: string; environmentDescription: string;
+    platformQuestion: string; platformDescription: string;
+    platforms: Record<"windows" | "mobile" | "mac-linux", { title: string; description: string; badge: string }>;
+    mobileLanguageNotice: string; mobileGitHubNotice: string;
     languageQuestion: string; javascript: string; javascriptDescription: string; typescript: string; typescriptDescription: string;
-    runtimeQuestion: string; runtimeDescription: string; nodeRuntime: string; nodeDescription: string; otherRuntimes: string; otherRuntimesDescription: string;
+    runtimeQuestion: string; runtimeDescription: string; nodeRuntime: string; nodeDescription: string; nodeUnavailableMobile: string; noRuntime: string; noRuntimeDescription: string; otherRuntimes: string; otherRuntimesDescription: string;
     githubQuestion: string; useGitHub: string; useGitHubDescription: string; noGitHub: string; noGitHubDescription: string;
     packageQuestion: string; packageDescription: string; noPackageManager: string; continue: string; back: string;
     toolingQuestion: string; toolingDescription: string; prettierDescription: string; eslintDescription: string; toolingRequiresManager: string;
@@ -68,8 +71,15 @@ const ja: Dictionary = {
     eyebrow: "DEVELOPMENT SUPPORT", title: "Kairo Project Builder", introBefore: "フォームを埋めるだけで、Kairoアドオン用の",
     introFile: "scripts/properties.js", introAfter: "を生成できます。ログインは必要ありません。", required: "必須",
     stepEnvironment: "開発環境", stepAddon: "アドオン設定", environmentTitle: "開発環境を選択", environmentDescription: "選択内容に合わせてプロジェクト構成と設定ファイルを生成します。",
+    platformQuestion: "どの端末で開発しますか？", platformDescription: "利用できる開発ツールと、Minecraft上での確認方法が端末によって異なります。",
+    platforms: {
+      windows: { title: "Windows", description: "MinecraftとNode.jsを同じPCで利用でき、開発から動作確認まで行えます。", badge: "推奨" },
+      mobile: { title: "スマートフォン", description: "Node.jsを使わず、JavaScriptとBP・RPを直接編集する構成です。", badge: "MOBILE" },
+      "mac-linux": { title: "macOS / Linux", description: "Node.jsで開発できますが、Minecraft上での動作確認には別の端末が必要です。", badge: "DESKTOP" },
+    },
+    mobileLanguageNotice: "スマートフォン向けには、ビルドを必要としないJavaScriptプロジェクトを生成します。", mobileGitHubNotice: "スマートフォン向け構成ではGitHubを使用しません。",
     languageQuestion: "どの言語で開発しますか？", javascript: "JavaScript", javascriptDescription: "型設定なしですぐに開発を始めます。", typescript: "TypeScript", typescriptDescription: "型安全な開発環境とtsconfigを生成します。",
-    runtimeQuestion: "実行・ビルド環境", runtimeDescription: "Minecraftで動くJavaScriptをビルドするための環境です。", nodeRuntime: "Node.js", nodeDescription: "現在正式対応している実行・ビルド環境です。", otherRuntimes: "その他の環境", otherRuntimesDescription: "Bunなどは実際の生成・ビルド検証後に追加します。",
+    runtimeQuestion: "実行・ビルド環境", runtimeDescription: "Minecraftで動くJavaScriptを準備するための環境です。", nodeRuntime: "Node.js", nodeDescription: "TypeScriptの変換や依存関係の管理、自動ビルドに利用します。", nodeUnavailableMobile: "スマートフォン向け構成では使用しません。", noRuntime: "ランタイムなし", noRuntimeDescription: "JavaScriptとBP・RPを直接編集します。", otherRuntimes: "その他の環境", otherRuntimesDescription: "Bunなどは実際の生成・ビルド検証後に追加します。",
     githubQuestion: "GitHubを使いますか？", useGitHub: "GitHubを使う", useGitHubDescription: ".gitignoreを含むGit管理向けの構成にします。", noGitHub: "使用しない", noGitHubDescription: "Git関連のファイルを生成しません。",
     packageQuestion: "パッケージマネージャー", packageDescription: "依存関係のインストールとビルドに使うツールを選択します。", noPackageManager: "使用しない", continue: "アドオン設定へ", back: "開発環境へ戻る",
     toolingQuestion: "コード品質ツール", toolingDescription: "フォーマットと静的解析の設定を必要に応じて追加します。", prettierDescription: "コードフォーマット設定とformat scriptsを追加します。", eslintDescription: "言語に対応した静的解析設定とlint scriptを追加します。", toolingRequiresManager: "PrettierとESLintを利用するにはnpmまたはpnpmを選択してください。",
@@ -129,8 +139,15 @@ const en: Dictionary = {
     eyebrow: "DEVELOPMENT SUPPORT", title: "Kairo Project Builder", introBefore: "Complete the form to generate",
     introFile: "scripts/properties.js", introAfter: "for your Kairo add-on. No account is required.", required: "Required",
     stepEnvironment: "Environment", stepAddon: "Add-on setup", environmentTitle: "Choose your development environment", environmentDescription: "The project structure and configuration files are generated from your choices.",
+    platformQuestion: "Which device will you develop on?", platformDescription: "Available development tools and Minecraft testing options depend on your device.",
+    platforms: {
+      windows: { title: "Windows", description: "Run Minecraft and Node.js on the same PC, from development through testing.", badge: "RECOMMENDED" },
+      mobile: { title: "Mobile", description: "Edit JavaScript and BP/RP files directly without Node.js.", badge: "MOBILE" },
+      "mac-linux": { title: "macOS / Linux", description: "Develop with Node.js, but use another device to test in Minecraft.", badge: "DESKTOP" },
+    },
+    mobileLanguageNotice: "Mobile projects use JavaScript directly and do not require a build step.", mobileGitHubNotice: "The mobile project setup does not use GitHub.",
     languageQuestion: "Which language will you use?", javascript: "JavaScript", javascriptDescription: "Start immediately without type configuration.", typescript: "TypeScript", typescriptDescription: "Generate a type-safe setup with a tsconfig.",
-    runtimeQuestion: "Runtime and build environment", runtimeDescription: "The environment used to build JavaScript that runs in Minecraft.", nodeRuntime: "Node.js", nodeDescription: "The currently supported runtime and build environment.", otherRuntimes: "Other runtimes", otherRuntimesDescription: "Bun and other options will be added after generation and build testing.",
+    runtimeQuestion: "Runtime and build environment", runtimeDescription: "The environment used to prepare JavaScript that runs in Minecraft.", nodeRuntime: "Node.js", nodeDescription: "Used for TypeScript, dependency management, and automated builds.", nodeUnavailableMobile: "Not used in the mobile project setup.", noRuntime: "No runtime", noRuntimeDescription: "Edit JavaScript and BP/RP files directly.", otherRuntimes: "Other runtimes", otherRuntimesDescription: "Bun and other options will be added after generation and build testing.",
     githubQuestion: "Will you use GitHub?", useGitHub: "Use GitHub", useGitHubDescription: "Include a .gitignore and Git-friendly project structure.", noGitHub: "Don't use GitHub", noGitHubDescription: "Do not generate Git-related files.",
     packageQuestion: "Package manager", packageDescription: "Choose the tool used to install dependencies and run builds.", noPackageManager: "None", continue: "Continue to add-on setup", back: "Back to environment",
     toolingQuestion: "Code quality tools", toolingDescription: "Optionally add formatting and static analysis configuration.", prettierDescription: "Add formatting configuration and format scripts.", eslintDescription: "Add language-aware static analysis and a lint script.", toolingRequiresManager: "Choose npm or pnpm to use Prettier and ESLint.",

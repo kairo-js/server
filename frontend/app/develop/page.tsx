@@ -20,6 +20,7 @@ import {
 import {
   buildProjectFiles,
   createProjectZip,
+  type DevelopmentPlatform,
   type PackageManager,
   type ProjectOptions,
   type SourceLanguage,
@@ -62,7 +63,7 @@ export default function DevelopPage() {
   const [form, setForm] = useState<PropertiesForm>(initialPropertiesForm);
   const [step, setStep] = useState<1 | 2>(1);
   const [options, setOptions] = useState<ProjectOptions>({
-    language: "typescript", runtime: "node", useGitHub: true, packageManager: "pnpm",
+    platform: "windows", language: "typescript", runtime: "node", useGitHub: true, packageManager: "pnpm",
     usePrettier: true, useESLint: true, includeReadme: true,
   });
   const [packIcon, setPackIcon] = useState<File>();
@@ -139,6 +140,7 @@ export default function DevelopPage() {
   }
 
   function selectLanguage(language: SourceLanguage) {
+    if (options.platform === "mobile") return;
     const advancedDefaults = language === "typescript";
     setOptions((current) => ({
       ...current,
@@ -148,6 +150,14 @@ export default function DevelopPage() {
       usePrettier: advancedDefaults,
       useESLint: advancedDefaults,
     }));
+  }
+
+  function selectPlatform(platform: DevelopmentPlatform) {
+    if (platform === "mobile") {
+      setOptions((current) => ({ ...current, platform, language: "javascript", runtime: "none", useGitHub: false, packageManager: "none", usePrettier: false, useESLint: false }));
+      return;
+    }
+    setOptions((current) => ({ ...current, platform, language: "typescript", runtime: "node", useGitHub: true, packageManager: "pnpm", usePrettier: true, useESLint: true }));
   }
 
   function selectPackageManager(packageManager: PackageManager) {
@@ -178,7 +188,7 @@ export default function DevelopPage() {
       await fetch("/api/v1/development-projects/generated", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          addonId: form.id, language: options.language, runtime: options.runtime,
+          addonId: form.id, platform: options.platform, language: options.language, runtime: options.runtime,
           githubEnabled: options.useGitHub, packageManager: options.packageManager,
           prettierEnabled: options.usePrettier, eslintEnabled: options.useESLint,
           readmeEnabled: options.includeReadme,
@@ -228,11 +238,24 @@ export default function DevelopPage() {
           <header className="develop-intro compact"><p className="eyebrow">{messages.eyebrow}</p><h1>{messages.environmentTitle}</h1><p>{messages.environmentDescription}</p></header>
           <div className="environment-form">
             <section className="choice-section">
-              <div className="section-heading"><span>01</span><div><h2>{messages.languageQuestion}</h2></div></div>
+              <div className="section-heading"><span>01</span><div><h2>{messages.platformQuestion}</h2><p>{messages.platformDescription}</p></div></div>
+              <div className="platform-choice-grid">
+                {(["windows", "mobile", "mac-linux"] as DevelopmentPlatform[]).map((platform) => (
+                  <label className={`choice-card platform-card ${platform === "windows" ? "recommended" : ""} ${options.platform === platform ? "selected" : ""}`} key={platform}>
+                    <input type="radio" name="platform" checked={options.platform === platform} onChange={() => selectPlatform(platform)} />
+                    <b>{messages.platforms[platform].title}</b>
+                    <span>{messages.platforms[platform].description}</span>
+                    <code>{messages.platforms[platform].badge}</code>
+                  </label>
+                ))}
+              </div>
+            </section>
+            <section className="choice-section">
+              <div className="section-heading"><span>02</span><div><h2>{messages.languageQuestion}</h2>{options.platform === "mobile" && <p>{messages.mobileLanguageNotice}</p>}</div></div>
               <div className="choice-grid two">
                 {(["javascript", "typescript"] as SourceLanguage[]).map((language) => (
-                  <label className={`choice-card ${options.language === language ? "selected" : ""}`} key={language}>
-                    <input type="radio" name="language" checked={options.language === language} onChange={() => selectLanguage(language)} />
+                  <label className={`choice-card ${options.language === language ? "selected" : ""} ${options.platform === "mobile" && language === "typescript" ? "disabled" : ""}`} key={language}>
+                    <input type="radio" name="language" checked={options.language === language} disabled={options.platform === "mobile" && language === "typescript"} onChange={() => selectLanguage(language)} />
                     <b>{language === "javascript" ? messages.javascript : messages.typescript}</b>
                     <span>{language === "javascript" ? messages.javascriptDescription : messages.typescriptDescription}</span>
                     <code>{language === "javascript" ? "JS" : "TS"}</code>
@@ -241,25 +264,25 @@ export default function DevelopPage() {
               </div>
             </section>
             <section className="choice-section">
-              <div className="section-heading"><span>02</span><div><h2>{messages.runtimeQuestion}</h2><p>{messages.runtimeDescription}</p></div></div>
+              <div className="section-heading"><span>03</span><div><h2>{messages.runtimeQuestion}</h2><p>{messages.runtimeDescription}</p></div></div>
               <div className="choice-grid two">
-                <label className="choice-card selected"><input type="radio" name="runtime" checked readOnly /><b>{messages.nodeRuntime}</b><span>{messages.nodeDescription}</span><code>Node</code></label>
-                <div className="choice-card disabled"><b>{messages.otherRuntimes}</b><span>{messages.otherRuntimesDescription}</span><code>Later</code></div>
+                <label className={`choice-card ${options.runtime === "node" ? "selected" : "disabled"}`}><input type="radio" name="runtime" checked={options.runtime === "node"} disabled={options.platform === "mobile"} readOnly /><b>{messages.nodeRuntime}</b><span>{options.platform === "mobile" ? messages.nodeUnavailableMobile : messages.nodeDescription}</span><code>Node</code></label>
+                <label className={`choice-card ${options.runtime === "none" ? "selected" : "disabled"}`}><input type="radio" name="runtime" checked={options.runtime === "none"} disabled={options.platform !== "mobile"} readOnly /><b>{messages.noRuntime}</b><span>{messages.noRuntimeDescription}</span><code>BP / RP</code></label>
               </div>
             </section>
             <section className="choice-section">
-              <div className="section-heading"><span>03</span><div><h2>{messages.githubQuestion}</h2></div></div>
+              <div className="section-heading"><span>04</span><div><h2>{messages.githubQuestion}</h2>{options.platform === "mobile" && <p>{messages.mobileGitHubNotice}</p>}</div></div>
               <div className="choice-grid two">
-                <label className={`choice-card ${options.useGitHub ? "selected" : ""}`}><input type="radio" name="github" checked={options.useGitHub} onChange={() => setOptions((current) => ({ ...current, useGitHub: true }))} /><b>{messages.useGitHub}</b><span>{messages.useGitHubDescription}</span><code>Git</code></label>
+                <label className={`choice-card ${options.useGitHub ? "selected" : ""} ${options.platform === "mobile" ? "disabled" : ""}`}><input type="radio" name="github" checked={options.useGitHub} disabled={options.platform === "mobile"} onChange={() => setOptions((current) => ({ ...current, useGitHub: true }))} /><b>{messages.useGitHub}</b><span>{messages.useGitHubDescription}</span><code>Git</code></label>
                 <label className={`choice-card ${!options.useGitHub ? "selected" : ""}`}><input type="radio" name="github" checked={!options.useGitHub} onChange={() => setOptions((current) => ({ ...current, useGitHub: false }))} /><b>{messages.noGitHub}</b><span>{messages.noGitHubDescription}</span><code>—</code></label>
               </div>
             </section>
             <section className="choice-section">
-              <div className="section-heading"><span>04</span><div><h2>{messages.packageQuestion}</h2><p>{messages.packageDescription}</p></div></div>
+              <div className="section-heading"><span>05</span><div><h2>{messages.packageQuestion}</h2><p>{messages.packageDescription}</p></div></div>
               <div className="choice-grid three">
                 {(["npm", "pnpm", "none"] as PackageManager[]).map((manager) => (
-                  <label className={`choice-card compact-card ${options.packageManager === manager ? "selected" : ""}`} key={manager}>
-                    <input type="radio" name="manager" checked={options.packageManager === manager} onChange={() => selectPackageManager(manager)} />
+                  <label className={`choice-card compact-card ${options.packageManager === manager ? "selected" : ""} ${options.platform === "mobile" && manager !== "none" ? "disabled" : ""}`} key={manager}>
+                    <input type="radio" name="manager" checked={options.packageManager === manager} disabled={options.platform === "mobile" && manager !== "none"} onChange={() => selectPackageManager(manager)} />
                     <b>{manager === "none" ? messages.noPackageManager : manager}</b><code>{manager === "none" ? "—" : manager.slice(0, 2)}</code>
                   </label>
                 ))}
@@ -267,7 +290,7 @@ export default function DevelopPage() {
               {options.packageManager === "none" && <p className="choice-warning">{messages.noManagerWarning}</p>}
             </section>
             <section className="choice-section">
-              <div className="section-heading"><span>05</span><div><h2>{messages.toolingQuestion}</h2><p>{messages.toolingDescription}</p></div></div>
+              <div className="section-heading"><span>06</span><div><h2>{messages.toolingQuestion}</h2><p>{messages.toolingDescription}</p></div></div>
               <div className="choice-grid two">
                 <label className={`choice-card ${options.usePrettier ? "selected" : ""} ${options.packageManager === "none" ? "disabled" : ""}`}>
                   <input type="checkbox" checked={options.usePrettier} disabled={options.packageManager === "none"} onChange={(event) => setOptions((current) => ({ ...current, usePrettier: event.target.checked }))} />

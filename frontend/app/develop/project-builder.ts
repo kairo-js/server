@@ -1,10 +1,12 @@
 import { buildPropertiesObject, generatePropertiesSource, type PropertiesForm } from "./properties-builder";
 
 export type SourceLanguage = "javascript" | "typescript";
-export type Runtime = "node";
+export type DevelopmentPlatform = "windows" | "mobile" | "mac-linux";
+export type Runtime = "node" | "none";
 export type PackageManager = "none" | "npm" | "pnpm";
 
 export type ProjectOptions = {
+  platform: DevelopmentPlatform;
   language: SourceLanguage;
   runtime: Runtime;
   useGitHub: boolean;
