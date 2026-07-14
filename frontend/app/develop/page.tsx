@@ -11,7 +11,7 @@ import {
   availableEngineMinors,
   generatePropertiesSource,
   initialPropertiesForm,
-  minecraftModules,
+  minecraftModuleGroups,
   minecraftModuleVersions,
   validatePropertiesForm,
   type MinecraftModuleType,
@@ -278,7 +278,7 @@ export default function DevelopPage() {
                 <legend>{messages.engineVersion}<span className="required">{messages.required}</span></legend>
                 <div className="engine-version-fields">
                   <label><span>major</span><input value="1" readOnly /></label>
-                  <label><span>year</span><select value={form.engineMinor} onChange={(event) => update("engineMinor", Number(event.target.value))}>{availableEngineMinors().map((minor) => <option value={minor} key={minor}>1.{minor}</option>)}</select></label>
+                  <label><span>minor</span><select value={form.engineMinor} onChange={(event) => update("engineMinor", Number(event.target.value))}>{availableEngineMinors().map((minor) => <option value={minor} key={minor}>{minor}</option>)}</select></label>
                   <label><span>patch</span><input type="number" min="0" step="1" value={form.enginePatch} onChange={(event) => update("enginePatch", Number(event.target.value))} /></label>
                 </div>
                 {visibleError("engine") && <span className="field-error">{visibleError("engine")}</span>}
@@ -288,17 +288,24 @@ export default function DevelopPage() {
             <section className="form-section full-section">
               <div className="section-heading"><span>04</span><div><h2>{messages.minecraftTitle}</h2><p>{messages.minecraftDescription}</p></div></div>
               <div className="module-list">
-                {minecraftModules.map((moduleName) => {
-                  const selection = form.modules[moduleName];
-                  return (
-                    <div className={`module-row ${selection.selected ? "selected" : ""}`} key={moduleName}>
-                      <label className="module-check"><input type="checkbox" checked={selection.selected} onChange={(event) => updateModule(moduleName, { selected: event.target.checked })} /><span>{moduleName}</span></label>
-                      <input list={`versions-${moduleName.replaceAll(/[^a-z]/gi, "-")}`} aria-label={`${moduleName} version`} disabled={!selection.selected} value={selection.version} onChange={(event) => updateModule(moduleName, { version: event.target.value })} placeholder="2.0.0" />
-                      <datalist id={`versions-${moduleName.replaceAll(/[^a-z]/gi, "-")}`}>{(minecraftModuleVersions[moduleName] ?? []).map((version) => <option value={version} key={version} />)}</datalist>
-                      {visibleError(`module:${moduleName}`) && <span className="field-error module-error">{visibleError(`module:${moduleName}`)}</span>}
-                    </div>
-                  );
-                })}
+                {minecraftModuleGroups.map((group) => (
+                  <section className={`module-group ${group.key}`} key={group.key}>
+                    <header><div><b>{messages.minecraftGroups[group.key].title}</b><p>{messages.minecraftGroups[group.key].description}</p></div><span>{messages.minecraftGroups[group.key].badge}</span></header>
+                    {group.modules.map((moduleName) => {
+                      const selection = form.modules[moduleName];
+                      const isKairoV2Module = moduleName === "@minecraft/server" || moduleName === "@minecraft/server-ui";
+                      return (
+                        <div className={`module-row ${selection.selected ? "selected" : ""}`} key={moduleName}>
+                          <label className="module-check"><input type="checkbox" checked={selection.selected} onChange={(event) => updateModule(moduleName, { selected: event.target.checked })} /><span>{moduleName}</span></label>
+                          <input list={`versions-${moduleName.replaceAll(/[^a-z]/gi, "-")}`} aria-label={`${moduleName} version`} disabled={!selection.selected} value={selection.version} onChange={(event) => updateModule(moduleName, { version: event.target.value })} placeholder={(minecraftModuleVersions[moduleName] ?? ["1.0.0-beta"])[0]} />
+                          <datalist id={`versions-${moduleName.replaceAll(/[^a-z]/gi, "-")}`}>{(minecraftModuleVersions[moduleName] ?? []).map((version) => <option value={version} key={version} />)}</datalist>
+                          {isKairoV2Module && <small className="module-note">{messages.kairoV2Compatibility}</small>}
+                          {visibleError(`module:${moduleName}`) && <span className="field-error module-error">{visibleError(`module:${moduleName}`)}</span>}
+                        </div>
+                      );
+                    })}
+                  </section>
+                ))}
               </div>
             </section>
 

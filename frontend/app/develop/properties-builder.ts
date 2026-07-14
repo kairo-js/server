@@ -3,7 +3,6 @@ export const minecraftModules = [
   "@minecraft/server-ui",
   "@minecraft/server-gametest",
   "@minecraft/server-editor",
-  "@minecraft/server-editor-private-bindings",
   "@minecraft/server-net",
   "@minecraft/server-admin",
   "@minecraft/debug-utilities",
@@ -12,11 +11,25 @@ export const minecraftModules = [
 ] as const;
 
 export const minecraftModuleVersions: Partial<Record<MinecraftModuleType, string[]>> = {
-  "@minecraft/server": ["2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.5.0", "2.6.0", "2.7.0", "2.8.0"],
-  "@minecraft/server-ui": ["2.0.0"],
+  "@minecraft/server": ["2.8.0", "2.7.0", "2.6.0", "2.5.0", "2.4.0", "2.3.0", "2.2.0", "2.1.0", "2.0.0"],
+  "@minecraft/server-ui": ["2.1.0", "2.0.0"],
+  "@minecraft/server-gametest": ["1.0.0-beta"],
+  "@minecraft/server-editor": ["1.0.0-beta"],
+  "@minecraft/server-net": ["1.0.0-beta"],
+  "@minecraft/server-admin": ["1.0.0-beta"],
+  "@minecraft/debug-utilities": ["1.0.0-beta"],
+  "@minecraft/diagnostics": ["1.0.0-beta"],
+  "@minecraft/server-graphics": ["1.0.0-beta"],
 };
 
 export type MinecraftModuleType = (typeof minecraftModules)[number];
+
+export const minecraftModuleGroups = [
+  { key: "primary", modules: ["@minecraft/server", "@minecraft/server-ui"] },
+  { key: "advanced", modules: ["@minecraft/server-admin", "@minecraft/server-gametest"] },
+  { key: "bds", modules: ["@minecraft/server-net"] },
+  { key: "experimental", modules: ["@minecraft/server-editor", "@minecraft/debug-utilities", "@minecraft/diagnostics", "@minecraft/server-graphics"] },
+] as const satisfies ReadonlyArray<{ key: string; modules: ReadonlyArray<MinecraftModuleType> }>;
 
 export type ModuleSelection = Record<
   MinecraftModuleType,
@@ -80,8 +93,8 @@ export const initialPropertiesForm: PropertiesForm = {
     minecraftModules.map((moduleName) => [
       moduleName,
       {
-        selected: moduleName === "@minecraft/server",
-        version: moduleName === "@minecraft/server" ? "2.0.0" : "",
+        selected: moduleName === "@minecraft/server" || moduleName === "@minecraft/server-ui",
+        version: moduleName === "@minecraft/server" ? "2.8.0" : moduleName === "@minecraft/server-ui" ? "2.1.0" : "",
       },
     ]),
   ) as ModuleSelection,
