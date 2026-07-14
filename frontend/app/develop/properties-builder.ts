@@ -29,6 +29,8 @@ export const minecraftModuleGroups = [
   { key: "experimental", modules: ["@minecraft/server-admin", "@minecraft/server-gametest", "@minecraft/server-net", "@minecraft/server-editor", "@minecraft/debug-utilities", "@minecraft/diagnostics", "@minecraft/server-graphics"] },
 ] as const satisfies ReadonlyArray<{ key: string; modules: ReadonlyArray<MinecraftModuleType> }>;
 
+export const experimentalMinecraftModules = new Set<MinecraftModuleType>(minecraftModuleGroups[1].modules);
+
 export type ModuleSelection = Record<
   MinecraftModuleType,
   { selected: boolean; version: string }
@@ -92,7 +94,7 @@ export const initialPropertiesForm: PropertiesForm = {
       moduleName,
       {
         selected: moduleName === "@minecraft/server" || moduleName === "@minecraft/server-ui",
-        version: moduleName === "@minecraft/server" ? "2.8.0" : moduleName === "@minecraft/server-ui" ? "2.1.0" : "",
+        version: moduleName === "@minecraft/server" ? "2.8.0" : moduleName === "@minecraft/server-ui" ? "2.1.0" : (minecraftModuleVersions[moduleName]?.[0] ?? ""),
       },
     ]),
   ) as ModuleSelection,
@@ -147,10 +149,9 @@ export function availableEngineMinors(date = new Date()) {
 }
 
 export function deriveTags(form: PropertiesForm) {
-  const selectedVersions = minecraftModules
-    .filter((moduleName) => form.modules[moduleName].selected)
-    .map((moduleName) => form.modules[moduleName].version);
-  const releaseTag = selectedVersions.some((version) => /(?:alpha|beta)/i.test(version))
+  const selectedModules = minecraftModules.filter((moduleName) => form.modules[moduleName].selected);
+  const releaseTag = selectedModules.some((moduleName) =>
+    experimentalMinecraftModules.has(moduleName) || /(?:alpha|beta)/i.test(form.modules[moduleName].version))
     ? "experimental"
     : "stable";
   const customTags = form.customTags

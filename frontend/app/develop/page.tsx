@@ -69,7 +69,7 @@ export default function DevelopPage() {
   const [packIconPreview, setPackIconPreview] = useState<string>();
   const [submitted, setSubmitted] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [idAvailability, setIDAvailability] = useState<"idle" | "checking" | "available" | "taken" | "reserved" | "invalid" | "unknown">("idle");
+  const [idAvailability, setIDAvailability] = useState<"idle" | "checking" | "available" | "intent" | "taken" | "reserved" | "invalid" | "unknown">("idle");
   const errors = validatePropertiesForm(form, dictionary.validation);
   const source = generatePropertiesSource(form, options.language);
   const tags = deriveTags(form);
@@ -174,6 +174,17 @@ export default function DevelopPage() {
       return;
     }
     const icon = packIcon ? new Uint8Array(await packIcon.arrayBuffer()) : undefined;
+    try {
+      await fetch("/api/v1/development-projects/generated", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          addonId: form.id, language: options.language, runtime: options.runtime,
+          githubEnabled: options.useGitHub, packageManager: options.packageManager,
+          prettierEnabled: options.usePrettier, eslintEnabled: options.useESLint,
+          readmeEnabled: options.includeReadme,
+        }),
+      });
+    } catch { /* Statistics must never prevent local project generation. */ }
     const blob = createProjectZip(buildProjectFiles(form, options, icon));
     const href = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
@@ -188,12 +199,19 @@ export default function DevelopPage() {
   function moduleRows(modules: ReadonlyArray<MinecraftModuleType>) {
     return modules.map((moduleName) => {
       const selection = form.modules[moduleName];
+      const versions = minecraftModuleVersions[moduleName] ?? ["1.0.0-beta"];
+      const usesCustomVersion = !versions.includes(selection.version);
       const isKairoV2Module = moduleName === "@minecraft/server" || moduleName === "@minecraft/server-ui";
       return (
         <div className={`module-row ${selection.selected ? "selected" : ""}`} key={moduleName}>
-          <label className="module-check"><input type="checkbox" checked={selection.selected} onChange={(event) => updateModule(moduleName, { selected: event.target.checked })} /><span>{moduleName}</span></label>
-          <input list={`versions-${moduleName.replaceAll(/[^a-z]/gi, "-")}`} aria-label={`${moduleName} version`} disabled={!selection.selected} value={selection.version} onChange={(event) => updateModule(moduleName, { version: event.target.value })} placeholder={(minecraftModuleVersions[moduleName] ?? ["1.0.0-beta"])[0]} />
-          <datalist id={`versions-${moduleName.replaceAll(/[^a-z]/gi, "-")}`}>{(minecraftModuleVersions[moduleName] ?? []).map((version) => <option value={version} key={version} />)}</datalist>
+          <label className="module-check"><input type="checkbox" checked={selection.selected} onChange={(event) => updateModule(moduleName, { selected: event.target.checked, ...(event.target.checked && !selection.version ? { version: versions[0] } : {}) })} /><span>{moduleName}</span></label>
+          <div className="module-version-fields">
+            <select aria-label={`${moduleName} version`} disabled={!selection.selected} value={usesCustomVersion ? "__custom" : selection.version} onChange={(event) => updateModule(moduleName, { version: event.target.value === "__custom" ? "" : event.target.value })}>
+              {versions.map((version) => <option value={version} key={version}>{version}</option>)}
+              <option value="__custom">{messages.customVersion}</option>
+            </select>
+            {selection.selected && usesCustomVersion && <input aria-label={`${moduleName} ${messages.customVersion}`} value={selection.version} onChange={(event) => updateModule(moduleName, { version: event.target.value })} placeholder="1.0.0-beta" />}
+          </div>
           {isKairoV2Module && <small className="module-note">{messages.kairoV2Compatibility}</small>}
           {visibleError(`module:${moduleName}`) && <span className="field-error module-error">{visibleError(`module:${moduleName}`)}</span>}
         </div>

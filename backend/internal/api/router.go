@@ -26,7 +26,9 @@ func NewRouter(pool *pgxpool.Pool, config Config) http.Handler {
 		store: auth.NewStore(pool), config: config,
 		httpClient: &http.Client{Timeout: 10 * time.Second},
 	}
-	addonIDs := &addonIDHandler{checker: addon.NewStore(pool)}
+	addonStore := addon.NewStore(pool)
+	addonIDs := &addonIDHandler{checker: addonStore}
+	developmentProjects := &developmentProjectHandler{recorder: addonStore}
 
 	mux.HandleFunc("GET /api/health", HealthHandler)
 	mux.HandleFunc("GET /api/health/db", DBHealthHandler(pool))
@@ -37,6 +39,7 @@ func NewRouter(pool *pgxpool.Pool, config Config) http.Handler {
 	mux.HandleFunc("GET /api/v1/me", authAPI.me)
 	mux.HandleFunc("POST /api/v1/logout", authAPI.logout)
 	mux.HandleFunc("GET /api/v1/addon-ids/{id}/availability", addonIDs.availability)
+	mux.HandleFunc("POST /api/v1/development-projects/generated", developmentProjects.generated)
 
 	return mux
 }

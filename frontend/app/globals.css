@@ -231,6 +231,7 @@ p { font-size: 17px; line-height: 1.7; }
 .id-availability { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; }
 .id-availability::before { width: 7px; height: 7px; border-radius: 50%; background: currentColor; content: ""; }
 .id-availability.available { color: #147458; }
+.id-availability.intent { color: #8a5b17; }
 .id-availability.taken, .id-availability.reserved, .id-availability.invalid { color: #a5322b; }
 .id-availability.checking { color: #557164; }
 .id-availability.unknown { color: #8a5b17; }
@@ -261,7 +262,10 @@ p { font-size: 17px; line-height: 1.7; }
 .module-check { display: flex; min-width: 0; align-items: center; gap: 10px; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
 .module-check input { width: 16px; height: 16px; accent-color: var(--accent); }
 .module-check span { overflow: hidden; text-overflow: ellipsis; }
-.module-row > input:disabled { color: #9ba39d; background: #f1f2f0; }
+.module-version-fields { display: grid; gap: 6px; }
+.module-version-fields select, .module-version-fields input { width: 100%; min-width: 0; min-height: 40px; padding: 0 10px; border: 1px solid #cbd3cc; border-radius: 7px; background: #fff; color: var(--foreground); font: inherit; font-size: 12px; }
+.module-version-fields select:focus, .module-version-fields input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #14745818; outline: none; }
+.module-version-fields select:disabled { color: #9ba39d; background: #f1f2f0; }
 .module-error { grid-column: 1 / -1; }
 .module-note { grid-column: 1 / -1; color: #667b6f; font-size: 10px; line-height: 1.45; }
 .locked-dependency { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 13px 14px; border: 1px solid #d9dfda; border-radius: 8px; background: #f4f6f4; }

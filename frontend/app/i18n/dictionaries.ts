@@ -27,12 +27,12 @@ export type Dictionary = {
     manifestNotice: string; generatedFiles: string; downloadProject: string; noManagerWarning: string;
     required: string; basicTitle: string; basicDescription: string; id: string; idPlaceholder: string;
     idHelp: string; displayName: string; displayNamePlaceholder: string; description: string;
-    idAvailability: Record<"idle" | "checking" | "available" | "taken" | "reserved" | "invalid" | "unknown", string>;
+    idAvailability: Record<"idle" | "checking" | "available" | "intent" | "taken" | "reserved" | "invalid" | "unknown", string>;
     descriptionPlaceholder: string; authorTitle: string; authorDescription: string; authors: string;
     authorsPlaceholder: string; authorsHelp: string; url: string; license: string;
     versionTitle: string; versionDescription: string; addonVersion: string; prerelease: string;
     build: string; engineVersion: string; minecraftTitle: string; minecraftDescription: string;
-    kairoV2Compatibility: string;
+    kairoV2Compatibility: string; customVersion: string;
     minecraftGroups: Record<"stable" | "experimental", { title: string; description: string; badge: string }>;
     kairoTitle: string; kairoDescription: string; tagsTitle: string; tagsDescription: string;
     automaticTag: string; customTags: string; customTagsPlaceholder: string; customTagsHelp: string;
@@ -80,6 +80,7 @@ const ja: Dictionary = {
     idHelp: "A-Z、a-z、0-9、ハイフンのみ使用できます。", displayName: "表示名", displayNamePlaceholder: "My Add-on",
     idAvailability: {
       idle: "IDを入力してください。", checking: "Kairoレジストリを確認しています…", available: "Kairoレジストリ上では現在利用可能です。",
+      intent: "このIDで最近プロジェクトが生成されています。将来重複する可能性がありますが、生成は可能です。",
       taken: "このIDは既に登録されています。", reserved: "このIDはKairo公式パッケージ用に予約されています。",
       invalid: "IDの形式を確認してください。", unknown: "レジストリへ接続できませんでした。重複を保証できませんが生成は可能です。",
     },
@@ -88,15 +89,15 @@ const ja: Dictionary = {
     versionTitle: "バージョン", versionDescription: "アドオンとMinecraftの互換性を指定します。", addonVersion: "アドオンバージョン",
     prerelease: "prerelease", build: "build", engineVersion: "最低エンジンバージョン", minecraftTitle: "Minecraft依存関係",
     minecraftDescription: "使用するScript APIモジュールを複数選択できます。", kairoTitle: "Kairo依存関係", kairoDescription: "必須依存として自動的に追加されます。",
-    kairoV2Compatibility: "Minecraft側では1.xも指定できますが、Kairoは2.0.0以上に対応しています。",
+    kairoV2Compatibility: "Minecraft側では1.xも指定できますが、Kairoは2.0.0以上に対応しています。", customVersion: "手入力…",
     minecraftGroups: {
       stable: { title: "安定版", description: "安定版を選択できるMinecraft Script APIモジュールです。", badge: "STABLE" },
-      experimental: { title: "Experimental", description: "現在はpre-release版のみ利用できるモジュールです。必要な場合に展開してください。", badge: "PRE-RELEASE" },
+      experimental: { title: "実験版", description: "現在はpre-release版のみ利用できるモジュールです。必要な場合に展開してください。", badge: "実験版" },
     },
     tagsTitle: "タグ", tagsDescription: "システムタグは依存関係から自動判定されます。", automaticTag: "自動タグ", customTags: "カスタムタグ",
     customTagsPlaceholder: "utility, world-generation", customTagsHelp: "カンマ区切り。official、approved、stable、experimentalはシステムが管理します。",
     preview: "PREVIEW", needsReview: (count) => `${count}件の要確認`, validationOk: "検証OK", copy: "コピー", copied: "コピーしました",
-    save: "properties.jsを保存", privacy: "入力内容と生成処理はブラウザ内で完結し、サーバーへ送信されません。",
+    save: "properties.jsを保存", privacy: "ZIP生成時に、IDの重複警告とサービス改善のため、アドオンIDと開発環境の選択を匿名で記録します。",
   },
   validation: {
     idRequired: "アドオンIDは必須です。", idInvalid: "A-Z、a-z、0-9、- のみ使用できます。", nameRequired: "表示名は必須です。",
@@ -140,6 +141,7 @@ const en: Dictionary = {
     idHelp: "Use only A-Z, a-z, 0-9, and hyphens.", displayName: "Display name", displayNamePlaceholder: "My Add-on",
     idAvailability: {
       idle: "Enter an ID.", checking: "Checking the Kairo registry…", available: "Currently available in the Kairo registry.",
+      intent: "A project was recently generated with this ID. You can continue, but it may conflict in the future.",
       taken: "This ID is already registered.", reserved: "This ID is reserved for an official Kairo package.",
       invalid: "Check the ID format.", unknown: "The registry could not be reached. Generation is allowed, but uniqueness cannot be confirmed.",
     },
@@ -148,7 +150,7 @@ const en: Dictionary = {
     versionTitle: "Versions", versionDescription: "Set add-on and Minecraft compatibility.", addonVersion: "Add-on version", prerelease: "prerelease",
     build: "build", engineVersion: "Minimum engine version", minecraftTitle: "Minecraft dependencies",
     minecraftDescription: "Select one or more Script API modules used by your add-on.", kairoTitle: "Kairo dependencies", kairoDescription: "These are automatically included as required dependencies.",
-    kairoV2Compatibility: "Minecraft also accepts 1.x versions, but Kairo supports version 2.0.0 and later.",
+    kairoV2Compatibility: "Minecraft also accepts 1.x versions, but Kairo supports version 2.0.0 and later.", customVersion: "Custom…",
     minecraftGroups: {
       stable: { title: "Stable", description: "Minecraft Script API modules with stable versions available.", badge: "STABLE" },
       experimental: { title: "Experimental", description: "These modules currently offer pre-release versions only. Expand when needed.", badge: "PRE-RELEASE" },
@@ -156,7 +158,7 @@ const en: Dictionary = {
     tagsTitle: "Tags", tagsDescription: "System tags are derived automatically from dependencies.", automaticTag: "Automatic tag", customTags: "Custom tags",
     customTagsPlaceholder: "utility, world-generation", customTagsHelp: "Comma-separated. official, approved, stable, and experimental are managed by the system.",
     preview: "PREVIEW", needsReview: (count) => `${count} to review`, validationOk: "Valid", copy: "Copy", copied: "Copied",
-    save: "Save properties.js", privacy: "Your input and generated output stay in this browser and are never sent to the server.",
+    save: "Save properties.js", privacy: "When generating a ZIP, the add-on ID and development environment choices are recorded anonymously for conflict warnings and service improvements.",
   },
   validation: {
     idRequired: "Add-on ID is required.", idInvalid: "Use only A-Z, a-z, 0-9, and hyphens.", nameRequired: "Display name is required.",
