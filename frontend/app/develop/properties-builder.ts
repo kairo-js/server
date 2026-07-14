@@ -11,6 +11,11 @@ export const minecraftModules = [
   "@minecraft/server-graphics",
 ] as const;
 
+export const minecraftModuleVersions: Partial<Record<MinecraftModuleType, string[]>> = {
+  "@minecraft/server": ["2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.5.0", "2.6.0", "2.7.0", "2.8.0"],
+  "@minecraft/server-ui": ["2.0.0"],
+};
+
 export type MinecraftModuleType = (typeof minecraftModules)[number];
 
 export type ModuleSelection = Record<
@@ -37,6 +42,7 @@ export type PropertiesForm = {
   kairoVersion: string;
   kairoDatabaseVersion: string;
   customTags: string;
+  additionalDependencies: Array<{ id: string; version: string }>;
 };
 
 type ValidationMessages = {
@@ -45,9 +51,14 @@ type ValidationMessages = {
   nameRequired: string;
   descriptionRequired: string;
   versionInvalid: string;
+  engineVersionInvalid: string;
   kairoRequired: string;
   databaseRequired: string;
   moduleVersionRequired: string;
+  dependencyIdRequired: string;
+  dependencyIdInvalid: string;
+  dependencyVersionRequired: string;
+  dependencyReserved: string;
 };
 
 export const initialPropertiesForm: PropertiesForm = {
@@ -63,7 +74,7 @@ export const initialPropertiesForm: PropertiesForm = {
   prerelease: "",
   build: "",
   engineMajor: 1,
-  engineMinor: 21,
+  engineMinor: Math.max(26, new Date().getFullYear() - 2000),
   enginePatch: 0,
   modules: Object.fromEntries(
     minecraftModules.map((moduleName) => [
@@ -77,6 +88,7 @@ export const initialPropertiesForm: PropertiesForm = {
   kairoVersion: "^1.0.0",
   kairoDatabaseVersion: "^1.0.0",
   customTags: "",
+  additionalDependencies: [],
 };
 
 const idPattern = /^[A-Za-z0-9-]+$/;
@@ -87,16 +99,15 @@ export function validatePropertiesForm(form: PropertiesForm, messages: Validatio
   if (!form.id) errors.id = messages.idRequired;
   else if (!idPattern.test(form.id)) errors.id = messages.idInvalid;
   if (!form.name.trim()) errors.name = messages.nameRequired;
-  if (!form.description.trim()) errors.description = messages.descriptionRequired;
 
-  const numberFields = [
-    ["version", form.versionMajor, form.versionMinor, form.versionPatch],
-    ["engine", form.engineMajor, form.engineMinor, form.enginePatch],
-  ] as const;
+  const numberFields = [["version", form.versionMajor, form.versionMinor, form.versionPatch]] as const;
   for (const [key, ...values] of numberFields) {
     if (values.some((value) => !Number.isInteger(value) || value < 0)) {
       errors[key] = messages.versionInvalid;
     }
+  }
+  if (form.engineMajor !== 1 || !availableEngineMinors().includes(form.engineMinor) || !Number.isInteger(form.enginePatch) || form.enginePatch < 0) {
+    errors.engine = messages.engineVersionInvalid;
   }
 
   if (!form.kairoVersion.trim()) errors.kairoVersion = messages.kairoRequired;
@@ -109,7 +120,19 @@ export function validatePropertiesForm(form: PropertiesForm, messages: Validatio
       errors[`module:${moduleName}`] = messages.moduleVersionRequired;
     }
   }
+  form.additionalDependencies.forEach((dependency, index) => {
+    const id = dependency.id.trim();
+    if (!id) errors[`dependency:${index}:id`] = messages.dependencyIdRequired;
+    else if (!idPattern.test(id)) errors[`dependency:${index}:id`] = messages.dependencyIdInvalid;
+    else if (id === "kairo" || id === "kairo-database") errors[`dependency:${index}:id`] = messages.dependencyReserved;
+    if (!dependency.version.trim()) errors[`dependency:${index}:version`] = messages.dependencyVersionRequired;
+  });
   return errors;
+}
+
+export function availableEngineMinors(date = new Date()) {
+  const current = Math.max(26, date.getFullYear() - 2000);
+  return current === 26 ? [26] : [current - 1, current];
 }
 
 export function deriveTags(form: PropertiesForm) {
@@ -160,6 +183,7 @@ export function buildPropertiesObject(form: PropertiesForm) {
     dependencies: {
       kairo: form.kairoVersion.trim(),
       "kairo-database": form.kairoDatabaseVersion.trim(),
+      ...Object.fromEntries(form.additionalDependencies.map((dependency) => [dependency.id.trim(), dependency.version.trim()])),
     },
     tags: deriveTags(form),
   };

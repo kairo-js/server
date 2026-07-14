@@ -2,14 +2,17 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { SiteHeader } from "../components/site-header";
 import { normalizeLocale } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionaries";
 import {
   deriveTags,
+  availableEngineMinors,
   generatePropertiesSource,
   initialPropertiesForm,
   minecraftModules,
+  minecraftModuleVersions,
   validatePropertiesForm,
   type MinecraftModuleType,
   type PropertiesForm,
@@ -63,6 +66,7 @@ export default function DevelopPage() {
     usePrettier: true, useESLint: true, includeReadme: true,
   });
   const [packIcon, setPackIcon] = useState<File>();
+  const [packIconPreview, setPackIconPreview] = useState<string>();
   const [submitted, setSubmitted] = useState(false);
   const [copied, setCopied] = useState(false);
   const errors = validatePropertiesForm(form, dictionary.validation);
@@ -80,6 +84,26 @@ export default function DevelopPage() {
     }));
   }
 
+  function updateAdditionalDependency(index: number, patch: Partial<PropertiesForm["additionalDependencies"][number]>) {
+    setForm((current) => ({
+      ...current,
+      additionalDependencies: current.additionalDependencies.map((dependency, dependencyIndex) =>
+        dependencyIndex === index ? { ...dependency, ...patch } : dependency),
+    }));
+  }
+
+  function removeAdditionalDependency(index: number) {
+    setForm((current) => ({ ...current, additionalDependencies: current.additionalDependencies.filter((_, dependencyIndex) => dependencyIndex !== index) }));
+  }
+
+  function selectPackIcon(file?: File) {
+    setPackIcon(file);
+    if (!file) { setPackIconPreview(undefined); return; }
+    const reader = new FileReader();
+    reader.onload = () => setPackIconPreview(typeof reader.result === "string" ? reader.result : undefined);
+    reader.readAsDataURL(file);
+  }
+
   function updateVersion(prefix: "version" | "engine", index: number, value: number) {
     const keys = prefix === "version"
       ? (["versionMajor", "versionMinor", "versionPatch"] as const)
@@ -92,7 +116,7 @@ export default function DevelopPage() {
     setOptions((current) => ({
       ...current,
       language,
-      useGitHub: advancedDefaults,
+      useGitHub: true,
       packageManager: advancedDefaults ? "pnpm" : "none",
       usePrettier: advancedDefaults,
       useESLint: advancedDefaults,
@@ -230,7 +254,7 @@ export default function DevelopPage() {
                 {visibleError("name") && <span className="field-error">{visibleError("name")}</span>}
               </label>
               <label className="form-field full">
-                <span>{messages.description} <b className="required">{messages.required}</b></span>
+                <span>{messages.description}</span>
                 <textarea rows={3} value={form.description} onChange={(event) => update("description", event.target.value)} placeholder={messages.descriptionPlaceholder} />
                 {visibleError("description") && <span className="field-error">{visibleError("description")}</span>}
               </label>
@@ -250,7 +274,15 @@ export default function DevelopPage() {
                 <label className="form-field"><span>{messages.prerelease}</span><input value={form.prerelease} onChange={(event) => update("prerelease", event.target.value)} placeholder="beta.1" /></label>
                 <label className="form-field"><span>{messages.build}</span><input value={form.build} onChange={(event) => update("build", event.target.value)} placeholder="20260713" /></label>
               </div>
-              <VersionFields label={messages.engineVersion} requiredLabel={messages.required} values={[form.engineMajor, form.engineMinor, form.enginePatch]} onChange={(index, value) => updateVersion("engine", index, value)} error={visibleError("engine")} />
+              <fieldset className="form-field">
+                <legend>{messages.engineVersion}<span className="required">{messages.required}</span></legend>
+                <div className="engine-version-fields">
+                  <label><span>major</span><input value="1" readOnly /></label>
+                  <label><span>year</span><select value={form.engineMinor} onChange={(event) => update("engineMinor", Number(event.target.value))}>{availableEngineMinors().map((minor) => <option value={minor} key={minor}>1.{minor}</option>)}</select></label>
+                  <label><span>patch</span><input type="number" min="0" step="1" value={form.enginePatch} onChange={(event) => update("enginePatch", Number(event.target.value))} /></label>
+                </div>
+                {visibleError("engine") && <span className="field-error">{visibleError("engine")}</span>}
+              </fieldset>
             </section>
 
             <section className="form-section full-section">
@@ -261,7 +293,8 @@ export default function DevelopPage() {
                   return (
                     <div className={`module-row ${selection.selected ? "selected" : ""}`} key={moduleName}>
                       <label className="module-check"><input type="checkbox" checked={selection.selected} onChange={(event) => updateModule(moduleName, { selected: event.target.checked })} /><span>{moduleName}</span></label>
-                      <input aria-label={`${moduleName} version`} disabled={!selection.selected} value={selection.version} onChange={(event) => updateModule(moduleName, { version: event.target.value })} placeholder="2.0.0" />
+                      <input list={`versions-${moduleName.replaceAll(/[^a-z]/gi, "-")}`} aria-label={`${moduleName} version`} disabled={!selection.selected} value={selection.version} onChange={(event) => updateModule(moduleName, { version: event.target.value })} placeholder="2.0.0" />
+                      <datalist id={`versions-${moduleName.replaceAll(/[^a-z]/gi, "-")}`}>{(minecraftModuleVersions[moduleName] ?? []).map((version) => <option value={version} key={version} />)}</datalist>
                       {visibleError(`module:${moduleName}`) && <span className="field-error module-error">{visibleError(`module:${moduleName}`)}</span>}
                     </div>
                   );
@@ -271,8 +304,18 @@ export default function DevelopPage() {
 
             <section className="form-section">
               <div className="section-heading"><span>05</span><div><h2>{messages.kairoTitle}</h2><p>{messages.kairoDescription}</p></div></div>
-              <label className="form-field"><span>kairo</span><input value={form.kairoVersion} onChange={(event) => update("kairoVersion", event.target.value)} />{visibleError("kairoVersion") && <span className="field-error">{visibleError("kairoVersion")}</span>}</label>
-              <label className="form-field"><span>kairo-database</span><input value={form.kairoDatabaseVersion} onChange={(event) => update("kairoDatabaseVersion", event.target.value)} />{visibleError("kairoDatabaseVersion") && <span className="field-error">{visibleError("kairoDatabaseVersion")}</span>}</label>
+              <div className="locked-dependency"><span>kairo</span><code>{form.kairoVersion}</code><b>LOCKED</b></div>
+              <div className="locked-dependency"><span>kairo-database</span><code>{form.kairoDatabaseVersion}</code><b>LOCKED</b></div>
+              <div className="additional-dependencies">
+                {form.additionalDependencies.map((dependency, index) => (
+                  <div className="dependency-row" key={index}>
+                    <label><span>{messages.dependencyId}</span><input value={dependency.id} onChange={(event) => updateAdditionalDependency(index, { id: event.target.value })} placeholder="my-library" />{visibleError(`dependency:${index}:id`) && <small className="field-error">{visibleError(`dependency:${index}:id`)}</small>}</label>
+                    <label><span>{messages.dependencyVersion}</span><input value={dependency.version} onChange={(event) => updateAdditionalDependency(index, { version: event.target.value })} placeholder="^1.0.0" />{visibleError(`dependency:${index}:version`) && <small className="field-error">{visibleError(`dependency:${index}:version`)}</small>}</label>
+                    <button type="button" onClick={() => removeAdditionalDependency(index)} aria-label={messages.removeDependency}>×</button>
+                  </div>
+                ))}
+                <button className="add-dependency" type="button" onClick={() => update("additionalDependencies", [...form.additionalDependencies, { id: "", version: "" }])}>＋ {messages.addDependency}</button>
+              </div>
             </section>
 
             <section className="form-section">
@@ -285,9 +328,10 @@ export default function DevelopPage() {
               <div className="section-heading"><span>07</span><div><h2>{messages.projectSettings}</h2><p>{messages.manifestNotice}</p></div></div>
               <label className="file-picker">
                 <span><b>{messages.packIcon}</b><small>{messages.packIconHelp}</small></span>
-                <input type="file" accept="image/png" onChange={(event) => setPackIcon(event.target.files?.[0])} />
+                <input type="file" accept="image/png" onChange={(event) => selectPackIcon(event.target.files?.[0])} />
                 <em>{packIcon?.name ?? messages.chooseIcon}</em>
               </label>
+              {packIconPreview && <div className="pack-icon-preview"><Image src={packIconPreview} alt={messages.packIconPreview} width={144} height={144} unoptimized /><span>{messages.packIconPreview}</span></div>}
               <label className="toggle-row">
                 <span><b>{messages.readme}</b><small>{messages.readmeDescription}</small></span>
                 <input type="checkbox" checked={options.includeReadme} onChange={(event) => setOptions((current) => ({ ...current, includeReadme: event.target.checked }))} />

@@ -23,6 +23,7 @@ export type Dictionary = {
     packageQuestion: string; packageDescription: string; noPackageManager: string; continue: string; back: string;
     toolingQuestion: string; toolingDescription: string; prettierDescription: string; eslintDescription: string; toolingRequiresManager: string;
     projectSettings: string; packIcon: string; packIconHelp: string; chooseIcon: string; readme: string; readmeDescription: string;
+    packIconPreview: string; dependencyId: string; dependencyVersion: string; addDependency: string; removeDependency: string;
     manifestNotice: string; generatedFiles: string; downloadProject: string; noManagerWarning: string;
     required: string; basicTitle: string; basicDescription: string; id: string; idPlaceholder: string;
     idHelp: string; displayName: string; displayNamePlaceholder: string; description: string;
@@ -37,7 +38,8 @@ export type Dictionary = {
   };
   validation: {
     idRequired: string; idInvalid: string; nameRequired: string; descriptionRequired: string;
-    versionInvalid: string; kairoRequired: string; databaseRequired: string; moduleVersionRequired: string;
+    versionInvalid: string; engineVersionInvalid: string; kairoRequired: string; databaseRequired: string; moduleVersionRequired: string;
+    dependencyIdRequired: string; dependencyIdInvalid: string; dependencyVersionRequired: string; dependencyReserved: string;
   };
 };
 
@@ -69,6 +71,7 @@ const ja: Dictionary = {
     packageQuestion: "パッケージマネージャー", packageDescription: "依存関係のインストールとビルドに使うツールを選択します。", noPackageManager: "使用しない", continue: "アドオン設定へ", back: "開発環境へ戻る",
     toolingQuestion: "コード品質ツール", toolingDescription: "フォーマットと静的解析の設定を必要に応じて追加します。", prettierDescription: "コードフォーマット設定とformat scriptsを追加します。", eslintDescription: "言語に対応した静的解析設定とlint scriptを追加します。", toolingRequiresManager: "PrettierとESLintを利用するにはnpmまたはpnpmを選択してください。",
     projectSettings: "プロジェクト生成設定", packIcon: "パックアイコン", packIconHelp: "PNG画像をpack_icon.pngとしてプロジェクトとBPへ追加します。", chooseIcon: "PNGを選択", readme: "README.mdを生成", readmeDescription: "アドオン名、説明、セットアップ方法を含むREADMEを追加します。",
+    packIconPreview: "パックアイコンのプレビュー", dependencyId: "依存ID", dependencyVersion: "バージョン条件", addDependency: "依存関係を追加", removeDependency: "依存関係を削除",
     manifestNotice: "manifest.jsonはpropertiesの名前、説明、バージョン、Minecraft依存関係から自動生成されます。", generatedFiles: "生成ファイル", downloadProject: "プロジェクトZIPを保存", noManagerWarning: "パッケージマネージャーを使わない場合、初期のBP成果物は生成されますが、自動ビルド設定は含まれません。",
     basicTitle: "基本情報", basicDescription: "アドオンを識別する情報です。", id: "アドオンID", idPlaceholder: "my-addon",
     idHelp: "A-Z、a-z、0-9、ハイフンのみ使用できます。", displayName: "表示名", displayNamePlaceholder: "My Add-on",
@@ -86,6 +89,7 @@ const ja: Dictionary = {
     idRequired: "アドオンIDは必須です。", idInvalid: "A-Z、a-z、0-9、- のみ使用できます。", nameRequired: "表示名は必須です。",
     descriptionRequired: "説明は必須です。", versionInvalid: "バージョンは0以上の整数で入力してください。", kairoRequired: "Kairoのバージョン条件は必須です。",
     databaseRequired: "Kairo Databaseのバージョン条件は必須です。", moduleVersionRequired: "選択したモジュールにはバージョンが必要です。",
+    engineVersionInvalid: "利用可能なMinecraftバージョンと0以上のpatchを指定してください。", dependencyIdRequired: "依存IDは必須です。", dependencyIdInvalid: "依存IDにはA-Z、a-z、0-9、-のみ使用できます。", dependencyVersionRequired: "バージョン条件は必須です。", dependencyReserved: "この依存関係はシステムが管理します。",
   },
 };
 
@@ -117,6 +121,7 @@ const en: Dictionary = {
     packageQuestion: "Package manager", packageDescription: "Choose the tool used to install dependencies and run builds.", noPackageManager: "None", continue: "Continue to add-on setup", back: "Back to environment",
     toolingQuestion: "Code quality tools", toolingDescription: "Optionally add formatting and static analysis configuration.", prettierDescription: "Add formatting configuration and format scripts.", eslintDescription: "Add language-aware static analysis and a lint script.", toolingRequiresManager: "Choose npm or pnpm to use Prettier and ESLint.",
     projectSettings: "Project generation", packIcon: "Pack icon", packIconHelp: "Add a PNG image as pack_icon.png in the project and BP.", chooseIcon: "Choose PNG", readme: "Generate README.md", readmeDescription: "Add a README with the add-on name, description, and setup instructions.",
+    packIconPreview: "Pack icon preview", dependencyId: "Dependency ID", dependencyVersion: "Version range", addDependency: "Add dependency", removeDependency: "Remove dependency",
     manifestNotice: "manifest.json is generated automatically from the name, description, version, and Minecraft dependencies in properties.", generatedFiles: "Generated files", downloadProject: "Download project ZIP", noManagerWarning: "Without a package manager, initial BP output is included, but automated build configuration is not generated.",
     basicTitle: "Basics", basicDescription: "Information that identifies your add-on.", id: "Add-on ID", idPlaceholder: "my-addon",
     idHelp: "Use only A-Z, a-z, 0-9, and hyphens.", displayName: "Display name", displayNamePlaceholder: "My Add-on",
@@ -134,6 +139,7 @@ const en: Dictionary = {
     idRequired: "Add-on ID is required.", idInvalid: "Use only A-Z, a-z, 0-9, and hyphens.", nameRequired: "Display name is required.",
     descriptionRequired: "Description is required.", versionInvalid: "Versions must be non-negative integers.", kairoRequired: "A Kairo version range is required.",
     databaseRequired: "A Kairo Database version range is required.", moduleVersionRequired: "Selected modules require a version.",
+    engineVersionInvalid: "Choose an available Minecraft version and a non-negative patch.", dependencyIdRequired: "Dependency ID is required.", dependencyIdInvalid: "Use only A-Z, a-z, 0-9, and hyphens in dependency IDs.", dependencyVersionRequired: "A version range is required.", dependencyReserved: "This dependency is managed by the system.",
   },
 };
 
