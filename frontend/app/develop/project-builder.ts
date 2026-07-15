@@ -18,7 +18,10 @@ export type ProjectOptions = {
 
 export type ProjectFile = { path: string; data: string | Uint8Array };
 
-type UUIDs = { header: string; data: string; script: string };
+type UUIDs = {
+  bp: { header: string; module: { data: string; script: string } };
+  rp: { header: string; modules: { resources: string } };
+};
 
 function versionString(version: { major: number; minor: number; patch: number; prerelease?: string; build?: string }) {
   let value = `${version.major}.${version.minor}.${version.patch}`;
@@ -36,7 +39,7 @@ function createManifest(properties: ReturnType<typeof buildPropertiesObject>, uu
     header: {
       name: `${properties.header.name} - v${versionString(version)}`,
       description: properties.header.description,
-      uuid: uuids.header,
+      uuid: uuids.bp.header,
       version: triple,
       min_engine_version: [
         properties.header.min_engine_version.major,
@@ -45,8 +48,8 @@ function createManifest(properties: ReturnType<typeof buildPropertiesObject>, uu
       ],
     },
     modules: [
-      { type: "data", uuid: uuids.data, version: triple },
-      { type: "script", language: "javascript", entry: "scripts/index.js", uuid: uuids.script, version: triple },
+      { type: "data", uuid: uuids.bp.module.data, version: triple },
+      { type: "script", language: "javascript", entry: "scripts/index.js", uuid: uuids.bp.module.script, version: triple },
     ],
     dependencies: properties.minecraftDependencies ?? [],
     capabilities: ["script_eval"],
@@ -63,9 +66,13 @@ function packageJSON(form: PropertiesForm, options: ProjectOptions) {
     .filter(([, selection]) => selection.selected)
     .map(([name, selection]) => [name, selection.version]);
   const sourceExtension = options.language === "typescript" ? "ts" : "js";
-  const typecheck = options.language === "typescript" ? "tsc --noEmit && " : "";
-  const scripts: Record<string, string> = {
-    build: `rimraf BP/scripts && ${typecheck}esbuild src/index.${sourceExtension} src/properties.${sourceExtension} --bundle --format=esm --platform=node --target=es2020 --outdir=BP/scripts --external:@minecraft/* && node .build/generate-manifest.mjs`,
+  const usesKairoCLI = options.runtime === "node" && options.language === "typescript";
+  const scripts: Record<string, string> = usesKairoCLI ? {
+    build: "kairo build",
+    "build:ci": "kairo build-ci",
+    typecheck: "kairo typecheck",
+  } : {
+    build: `rimraf BP/scripts && esbuild src/index.${sourceExtension} src/properties.${sourceExtension} --bundle --format=esm --platform=node --target=es2020 --outdir=BP/scripts --external:@minecraft/* && node .build/generate-manifest.mjs`,
   };
   if (options.usePrettier) {
     scripts.format = "prettier --write .";
@@ -79,12 +86,12 @@ function packageJSON(form: PropertiesForm, options: ProjectOptions) {
     description: form.description.trim(),
     type: "module",
     engines: { node: ">=22" },
+    ...(usesKairoCLI ? { kairoBuild: { platform: "node" } } : {}),
     scripts,
     dependencies: { "@kairo-js/properties": "1.2.1", "@kairo-js/router": "1.0.0-beta.1" },
     devDependencies: {
       ...Object.fromEntries(selectedMinecraft),
-      esbuild: "^0.27.3",
-      rimraf: "^6.1.3",
+      ...(usesKairoCLI ? { "@kairo-js/cli": "0.1.0-beta" } : { esbuild: "^0.27.3", rimraf: "^6.1.3" }),
       ...(options.language === "typescript" ? { typescript: "^5.9.3" } : {}),
       ...(options.usePrettier ? { prettier: "^3.6.2" } : {}),
       ...(options.useESLint ? {
@@ -114,7 +121,7 @@ function gitignore(manager: PackageManager) {
   };
   return [
     "node_modules/", ...managerLines[manager], "", "# generated build output", "BP/scripts/", "BP/manifest.json",
-    "", "# generated UUIDs", ".build/uuids.json", "",
+    "", "# generated build state", ".build/.uuid.json", ".build/.manifest-version.json", "",
   ].join("\n");
 }
 
@@ -135,28 +142,31 @@ function eslintConfig(language: SourceLanguage) {
 
 function readme(form: PropertiesForm, options: ProjectOptions) {
   const install = options.packageManager === "none" ? "" : `\n## Setup\n\n\`\`\`bash\n${options.packageManager} install\n${options.packageManager} run build\n\`\`\`\n`;
-  return `# ${form.name.trim()}\n\n${form.description.trim()}\n${install}\n## Development\n\nEdit \`src/properties.${options.language === "typescript" ? "ts" : "js"}\`. The build generates \`BP/manifest.json\` from these properties.\n`;
+  return `# ${form.name.trim()}\n\n${form.description.trim()}\n${install}\n## Development\n\nEdit \`src/properties.${options.language === "typescript" ? "ts" : "js"}\`. The build generates \`BP/manifest.json\` from these properties.\n\n## UUID policy\n\nPack UUIDs are randomly generated and stored in \`.build/.uuid.json\`. They are intentionally not derived from the add-on ID because Minecraft must treat different released versions as distinct pack identities before Kairo manages them in-world. Do not replace them with deterministic add-on-ID-based UUIDs.\n`;
 }
 
 function manifestGenerator() {
-  return `import fs from "node:fs";\n\nconst { properties } = await import(new URL("../BP/scripts/properties.js", import.meta.url).href);\nconst uuids = JSON.parse(fs.readFileSync(new URL("./uuids.json", import.meta.url), "utf8"));\nconst v = properties.header.version;\nconst triple = [v.major, v.minor, v.patch];\nconst engine = properties.header.min_engine_version;\nconst manifest = {\n  format_version: 2,\n  metadata: { ...(properties.metadata ?? {}), generated_with: { kairo: [properties.dependencies?.kairo ?? "unknown"] } },\n  header: { name: properties.header.name, description: properties.header.description, uuid: uuids.header, version: triple, min_engine_version: [engine.major, engine.minor, engine.patch] },\n  modules: [\n    { type: "data", uuid: uuids.data, version: triple },\n    { type: "script", language: "javascript", entry: "scripts/index.js", uuid: uuids.script, version: triple },\n  ],\n  dependencies: properties.minecraftDependencies ?? [],\n  capabilities: ["script_eval"],\n};\nfs.mkdirSync("BP", { recursive: true });\nfs.writeFileSync("BP/manifest.json", JSON.stringify(manifest, null, 2));\nif (fs.existsSync("pack_icon.png")) fs.copyFileSync("pack_icon.png", "BP/pack_icon.png");\nconsole.log("Generated BP/manifest.json from properties.");\n`;
+  return `import fs from "node:fs";\n\nconst { properties } = await import(new URL("../BP/scripts/properties.js", import.meta.url).href);\nconst uuids = JSON.parse(fs.readFileSync(new URL("./.uuid.json", import.meta.url), "utf8"));\nconst v = properties.header.version;\nconst triple = [v.major, v.minor, v.patch];\nconst engine = properties.header.min_engine_version;\nconst manifest = {\n  format_version: 2,\n  metadata: { ...(properties.metadata ?? {}), generated_with: { kairo: [properties.dependencies?.kairo ?? "unknown"] } },\n  header: { name: properties.header.name, description: properties.header.description, uuid: uuids.bp.header, version: triple, min_engine_version: [engine.major, engine.minor, engine.patch] },\n  modules: [\n    { type: "data", uuid: uuids.bp.module.data, version: triple },\n    { type: "script", language: "javascript", entry: "scripts/index.js", uuid: uuids.bp.module.script, version: triple },\n  ],\n  dependencies: properties.minecraftDependencies ?? [],\n  capabilities: ["script_eval"],\n};\nfs.mkdirSync("BP", { recursive: true });\nfs.writeFileSync("BP/manifest.json", JSON.stringify(manifest, null, 2));\nif (fs.existsSync("pack_icon.png")) fs.copyFileSync("pack_icon.png", "BP/pack_icon.png");\nconsole.log("Generated BP/manifest.json from properties.");\n`;
 }
 
 export function buildProjectFiles(form: PropertiesForm, options: ProjectOptions, icon?: Uint8Array): ProjectFile[] {
   const extension = options.language === "typescript" ? "ts" : "js";
   const properties = buildPropertiesObject(form);
-  const uuids: UUIDs = { header: crypto.randomUUID(), data: crypto.randomUUID(), script: crypto.randomUUID() };
+  const uuids: UUIDs = {
+    bp: { header: crypto.randomUUID(), module: { data: crypto.randomUUID(), script: crypto.randomUUID() } },
+    rp: { header: crypto.randomUUID(), modules: { resources: crypto.randomUUID() } },
+  };
   const files: ProjectFile[] = [
     { path: `src/properties.${extension}`, data: generatePropertiesSource(form, options.language) },
     { path: `src/index.${extension}`, data: indexSource(options.language) },
     { path: "BP/scripts/properties.js", data: generatePropertiesSource(form, "javascript") },
     { path: "BP/scripts/index.js", data: indexSource("javascript") },
     { path: "BP/manifest.json", data: JSON.stringify(createManifest(properties, uuids), null, 2) + "\n" },
-    { path: ".build/uuids.json", data: JSON.stringify(uuids, null, 2) + "\n" },
+    { path: ".build/.uuid.json", data: JSON.stringify(uuids, null, 2) + "\n" },
   ];
   if (options.packageManager !== "none") {
     files.push({ path: "package.json", data: packageJSON(form, options) });
-    files.push({ path: ".build/generate-manifest.mjs", data: manifestGenerator() });
+    if (options.language === "javascript") files.push({ path: ".build/generate-manifest.mjs", data: manifestGenerator() });
   }
   if (options.language === "typescript" && options.packageManager !== "none") files.push({ path: "tsconfig.json", data: tsconfig() });
   if (options.usePrettier && options.packageManager !== "none") {

@@ -239,6 +239,7 @@ Minecraft Script APIモジュールは、安定版を選択できるものとpre
 - WindowsはMinecraftとNode.jsを同一PCで利用できる推奨環境とする
 - スマートフォンはJavaScript・ランタイムなし・GitHubなし・パッケージマネージャーなしへ自動設定する
 - macOS / LinuxはNode.js開発を可能とするが、Minecraft上での確認には別端末が必要なことを明示する
+- WindowsとmacOS / Linuxでもランタイムなしを選択でき、その場合はJavaScriptとBP・RPだけの構成にする
 
 - 開発言語: JavaScriptまたはTypeScript
 - 実行・ビルド環境: 初期版はNode.jsのみ正式対応
@@ -250,6 +251,8 @@ Minecraft Script APIモジュールは、安定版を選択できるものとpre
 実行環境とパッケージマネージャーは別の設定として保持し、将来Node.js以外の環境を追加できるようにします。BunやYarnなどは、生成・依存取得・ビルドを実際に検証してから対応候補へ追加します。
 
 選択内容によって、propertiesの拡張子、TypeScript設定、`package.json`、`.gitignore`、READMEのセットアップコマンドなどを切り替えます。GitHubを利用しない場合はGit関連ファイルを生成しません。パッケージマネージャーを利用しない場合も初期のBP成果物は生成しますが、自動ビルド設定は含めず、PrettierとESLintも選択できません。
+
+TypeScriptとNode.jsを使うプロジェクトでは、`@kairo-js/cli`をdevDependencyへ追加し、`kairo build`と`kairo build-ci`をpackage scriptsとして生成します。JavaScriptのentry point検出がCLIへ追加されるまでは、JavaScript＋Node.js構成のみ従来の直接ビルドを維持します。
 
 言語選択時の初期値は次のとおりです。これは利用者の技術力を断定する表示には使わず、簡易構成と標準的な開発構成の推奨プリセットとして扱います。
 
@@ -269,6 +272,15 @@ Minecraft Script APIモジュールは、安定版を選択できるものとpre
 propertiesから`BP/manifest.json`が生成されることを画面上で明示します。pack iconはアップロード直後にブラウザ内でプレビューします。完成時には、ソース、初期BP成果物、manifest、UUID、任意のpack icon、README、Git設定、パッケージ設定を含むプロジェクトZIPをブラウザ内で生成します。入力ファイルと生成物はサーバーへ送信しません。
 
 3ページ目では生成されるプロジェクト全体をプレビューします。左側にファイル構造、右側に選択したファイルの内容をGitHub風のレイアウトで表示し、テキストファイルは個別にコピー可能とします。pack iconは画像として表示し、ZIPのダウンロード操作はこのページに配置します。
+
+### Pack UUIDポリシー
+
+Pack UUIDを安定したアドオンIDから決定的に生成してはいけません。Kairoがワールド内でアドオンのバージョンを管理する前に、Minecraftが同じUUIDを持つ異なるバージョンを同一のpack identityとして統合してしまうためです。
+
+- UUIDはランダムに生成して `.build/.uuid.json` に保存する
+- 同じローカルプロジェクト内のビルドでは保存済みUUIDを再利用する
+- `.build/.uuid.json` はGit管理対象外とし、リリースされたバージョン間では異なるUUIDを許容する
+- ワールド内のバージョン管理モデルが変わらない限り、アドオンID由来の決定的UUIDへ置き換えない
 
 ### ローカルプロジェクトの一時アップロード
 
