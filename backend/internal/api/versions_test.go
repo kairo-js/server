@@ -49,6 +49,27 @@ func TestParseRegistryManifestRequiresKairoDependencies(t *testing.T) {
 	}
 }
 
+func TestParseRegistryManifestAllowsKairoDependencyRoot(t *testing.T) {
+	raw := `{"schemaVersion":1,"addonId":"kairo","version":"1.0.0-beta.3","minimumEngineVersion":"1.21.132","optionalDependencies":{"kairo-database":"^1.0.0"}}`
+	if _, err := parseRegistryManifest(raw, "kairo", "1.0.0-beta.3"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestParseRegistryManifestAllowsKairoDatabaseWithKairoDependency(t *testing.T) {
+	raw := `{"schemaVersion":1,"addonId":"kairo-database","version":"1.0.0-beta.4","minimumEngineVersion":"1.21.132","dependencies":{"kairo":"*"}}`
+	if _, err := parseRegistryManifest(raw, "kairo-database", "1.0.0-beta.4"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestParseRegistryManifestRejectsSelfDependency(t *testing.T) {
+	raw := `{"schemaVersion":1,"addonId":"kairo","version":"1.0.0","minimumEngineVersion":"1.21.132","dependencies":{"kairo":"*"}}`
+	if _, err := parseRegistryManifest(raw, "kairo", "1.0.0"); err == nil {
+		t.Fatal("expected self dependency to fail")
+	}
+}
+
 func writeTestZip(t *testing.T, name string) string {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "addon.zip")

@@ -59,10 +59,25 @@ func parseRegistryManifest(raw, addonID, version string) (json.RawMessage, error
 			if strings.TrimSpace(id) == "" || len(id) > 128 || strings.TrimSpace(constraint) == "" || len(constraint) > 128 {
 				return nil, errors.New("Manifest contains an invalid dependency")
 			}
+			if strings.EqualFold(id, addonID) {
+				return nil, errors.New("Manifest must not declare a dependency on itself")
+			}
 		}
 	}
-	if strings.TrimSpace(manifest.Dependencies["kairo"]) == "" || strings.TrimSpace(manifest.Dependencies["kairo-database"]) == "" {
-		return nil, errors.New("Manifest must declare kairo and kairo-database dependencies")
+	hasRequiredDependency := func(id string) bool {
+		return strings.TrimSpace(manifest.Dependencies[id]) != ""
+	}
+	switch addonID {
+	case "kairo":
+		// Kairo is the dependency root and must not depend on itself.
+	case "kairo-database":
+		if !hasRequiredDependency("kairo") {
+			return nil, errors.New("kairo-database must declare a kairo dependency")
+		}
+	default:
+		if !hasRequiredDependency("kairo") || !hasRequiredDependency("kairo-database") {
+			return nil, errors.New("Manifest must declare kairo and kairo-database dependencies")
+		}
 	}
 	return json.Marshal(manifest)
 }
