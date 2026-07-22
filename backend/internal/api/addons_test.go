@@ -22,6 +22,7 @@ type fakeAddonReader struct {
 	addon    addon.Addon
 	versions []addon.Version
 	latest   addon.Version
+	channel  string
 	err      error
 }
 
@@ -33,7 +34,8 @@ func (f *fakeAddonReader) Versions(context.Context, string) ([]addon.Version, er
 	return f.versions, f.err
 }
 
-func (f *fakeAddonReader) LatestVersion(context.Context, string) (addon.Version, error) {
+func (f *fakeAddonReader) LatestVersion(_ context.Context, _, channel string) (addon.Version, error) {
+	f.channel = channel
 	return f.latest, f.err
 }
 
@@ -144,6 +146,29 @@ func TestGetLatestStableVersion(t *testing.T) {
 	request.SetPathValue("id", "kairo")
 	handler.latestVersion(response, request)
 	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"version":"2.0.0"`) {
+		t.Fatalf("status = %d, body = %s", response.Code, response.Body.String())
+	}
+}
+
+func TestGetLatestBetaVersion(t *testing.T) {
+	reader := &fakeAddonReader{latest: addon.Version{Version: "2.0.0-beta.3", Prerelease: true}}
+	handler := &addonHandler{reader: reader}
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/addons/kairo/versions/latest?channel=beta", nil)
+	request.SetPathValue("id", "kairo")
+	handler.latestVersion(response, request)
+	if response.Code != http.StatusOK || reader.channel != "beta" || !strings.Contains(response.Body.String(), `"version":"2.0.0-beta.3"`) {
+		t.Fatalf("status = %d, channel = %q, body = %s", response.Code, reader.channel, response.Body.String())
+	}
+}
+
+func TestGetLatestVersionRejectsUnknownChannel(t *testing.T) {
+	handler := &addonHandler{reader: &fakeAddonReader{}}
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/addons/kairo/versions/latest?channel=nightly", nil)
+	request.SetPathValue("id", "kairo")
+	handler.latestVersion(response, request)
+	if response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "invalid_channel") {
 		t.Fatalf("status = %d, body = %s", response.Code, response.Body.String())
 	}
 }

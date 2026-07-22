@@ -104,6 +104,8 @@ GET    /api/v1/organizations/{slug}
 GET    /api/v1/organizations/mine
 ```
 
+`GET /api/v1/addons/{id}/versions/latest` は最新の安定版を返し、安定版が一つもない場合は最新のprereleaseへフォールバックします。`?channel=stable` は安定版のみ、`?channel=beta` はbeta版のみを返します。
+
 認証方式、リクエスト・レスポンス形式、公開範囲はAPI仕様の作成時に確定します。
 
 ### Organizationと所有権

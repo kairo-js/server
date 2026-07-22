@@ -150,12 +150,25 @@ func (s *Store) Versions(ctx context.Context, addonID string) ([]Version, error)
 	return versions, nil
 }
 
-func (s *Store) LatestVersion(ctx context.Context, addonID string) (Version, error) {
+func (s *Store) LatestVersion(ctx context.Context, addonID, channel string) (Version, error) {
 	var result Version
-	err := s.pool.QueryRow(ctx, `SELECT av.version, av.prerelease, av.file_name, av.file_size, av.sha256, av.published_at, av.manifest, av.file_key
+	query := `SELECT av.version, av.prerelease, av.file_name, av.file_size, av.sha256, av.published_at, av.manifest, av.file_key
 		FROM addon_versions av JOIN addons a ON a.id = av.addon_id
-		WHERE a.normalized_id = lower($1) AND a.status = 'active' AND av.prerelease = false
-		ORDER BY av.published_at DESC LIMIT 1`, addonID).
+		WHERE a.normalized_id = lower($1) AND a.status = 'active'`
+	args := []any{addonID}
+	switch channel {
+	case "stable":
+		query += ` AND av.prerelease = false ORDER BY av.published_at DESC`
+	case "beta":
+		query += ` AND av.prerelease = true
+			AND split_part(split_part(av.version, '-', 2), '.', 1) = $2
+			ORDER BY av.published_at DESC`
+		args = append(args, channel)
+	default:
+		query += ` ORDER BY av.prerelease ASC, av.published_at DESC`
+	}
+	query += ` LIMIT 1`
+	err := s.pool.QueryRow(ctx, query, args...).
 		Scan(&result.Version, &result.Prerelease, &result.FileName, &result.FileSize, &result.SHA256, &result.PublishedAt, &result.Manifest, &result.FileKey)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Version{}, ErrAddonNotFound

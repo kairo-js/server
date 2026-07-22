@@ -20,7 +20,7 @@ type addonCreator interface {
 type addonReader interface {
 	Addon(context.Context, string) (addon.Addon, error)
 	Versions(context.Context, string) ([]addon.Version, error)
-	LatestVersion(context.Context, string) (addon.Version, error)
+	LatestVersion(context.Context, string, string) (addon.Version, error)
 }
 
 type addonHandler struct {
@@ -60,7 +60,12 @@ func (h *addonHandler) versions(w http.ResponseWriter, r *http.Request) {
 
 func (h *addonHandler) latestVersion(w http.ResponseWriter, r *http.Request) {
 	addonID := strings.ToLower(r.PathValue("id"))
-	result, err := h.reader.LatestVersion(r.Context(), addonID)
+	channel := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("channel")))
+	if channel != "" && channel != "stable" && channel != "beta" {
+		writeError(w, http.StatusBadRequest, "invalid_channel", "Channel must be stable or beta")
+		return
+	}
+	result, err := h.reader.LatestVersion(r.Context(), addonID, channel)
 	if !writeAddonReadError(w, err) {
 		writeJSON(w, http.StatusOK, map[string]any{"version": publicAddonVersion(addonID, result)})
 	}
