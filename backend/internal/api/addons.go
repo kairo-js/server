@@ -18,9 +18,20 @@ type addonCreator interface {
 }
 
 type addonReader interface {
+	Addons(context.Context) ([]addon.Addon, error)
 	Addon(context.Context, string) (addon.Addon, error)
 	Versions(context.Context, string) ([]addon.Version, error)
 	LatestVersion(context.Context, string, string) (addon.Version, error)
+}
+
+func (h *addonHandler) list(w http.ResponseWriter, r *http.Request) {
+	result, err := h.reader.Addons(r.Context())
+	if err != nil {
+		log.Printf("list addons failed: %v", err)
+		writeError(w, http.StatusInternalServerError, "internal_error", "Could not list add-ons")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"addons": result})
 }
 
 type addonHandler struct {

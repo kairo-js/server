@@ -72,6 +72,7 @@ func NewRouter(pool *pgxpool.Pool, config Config) http.Handler {
 	mux.HandleFunc("POST /api/v1/tokens", tokens.create)
 	mux.HandleFunc("DELETE /api/v1/tokens/{id}", tokens.revoke)
 	mux.HandleFunc("POST /api/v1/development-projects/generated", developmentProjects.generated)
+	mux.HandleFunc("GET /api/v1/addons", addons.list)
 	mux.HandleFunc("POST /api/v1/addons", addons.create)
 	mux.HandleFunc("GET /api/v1/addons/{id}", addons.get)
 	mux.HandleFunc("GET /api/v1/addons/{id}/versions", addons.versions)

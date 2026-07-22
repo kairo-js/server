@@ -19,11 +19,16 @@ type fakeAddonCreator struct {
 }
 
 type fakeAddonReader struct {
+	addons   []addon.Addon
 	addon    addon.Addon
 	versions []addon.Version
 	latest   addon.Version
 	channel  string
 	err      error
+}
+
+func (f *fakeAddonReader) Addons(context.Context) ([]addon.Addon, error) {
+	return f.addons, f.err
 }
 
 func (f *fakeAddonReader) Addon(context.Context, string) (addon.Addon, error) {
@@ -123,6 +128,16 @@ func TestGetPublicAddon(t *testing.T) {
 	request := httptest.NewRequest(http.MethodGet, "/api/v1/addons/kairo", nil)
 	request.SetPathValue("id", "kairo")
 	handler.get(response, request)
+	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"addonId":"kairo"`) {
+		t.Fatalf("status = %d, body = %s", response.Code, response.Body.String())
+	}
+}
+
+func TestListPublicAddons(t *testing.T) {
+	handler := &addonHandler{reader: &fakeAddonReader{addons: []addon.Addon{{AddonID: "kairo", DisplayName: "Kairo"}}}}
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/addons", nil)
+	handler.list(response, request)
 	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"addonId":"kairo"`) {
 		t.Fatalf("status = %d, body = %s", response.Code, response.Body.String())
 	}

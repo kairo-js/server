@@ -7,7 +7,8 @@ export type Dictionary = {
     eyebrow: string; titleLine1: string; titleLine2: string; lead: string;
     findAddons: string; publishAddon: string; authError: string; registryEyebrow: string;
     registryTitle: string; registryDescription: string; registryPreparing: string;
-    registrySoon: string; footerDescription: string;
+    registrySoon: string; registryLoading: string; registryError: string; noPublishedAddons: string;
+    latestVersion: string; prerelease: string; download: string; owner: string; footerDescription: string;
   };
   account: {
     eyebrow: string; loading: string; loginRequired: string; loginDescription: string;
@@ -73,7 +74,7 @@ const ja: Dictionary = {
     findAddons: "アドオンを探す", publishAddon: "アドオンを公開する", authError: "ログインを完了できませんでした。もう一度お試しください。",
     registryEyebrow: "REGISTRY", registryTitle: "アドオンレジストリ",
     registryDescription: "公開されたアドオンは、Web・API・将来のKairo CLIから同じように利用できます。",
-    registryPreparing: "レジストリを準備しています", registrySoon: "最初のアドオン公開機能をまもなく追加します。",
+    registryPreparing: "レジストリを準備しています", registrySoon: "最初のアドオン公開機能をまもなく追加します。", registryLoading: "公開済みアドオンを読み込んでいます…", registryError: "レジストリを読み込めませんでした。", noPublishedAddons: "公開済みのアドオンはまだありません。", latestVersion: "最新バージョン", prerelease: "プレリリース", download: "ダウンロード", owner: "所有者",
     footerDescription: "Kairoのオープンなアドオンレジストリ",
   },
   account: {
@@ -153,7 +154,7 @@ const en: Dictionary = {
     findAddons: "Explore add-ons", publishAddon: "Publish an add-on", authError: "We couldn't complete sign-in. Please try again.",
     registryEyebrow: "REGISTRY", registryTitle: "Add-on registry",
     registryDescription: "Published add-ons will be available consistently through the web, API, and the future Kairo CLI.",
-    registryPreparing: "The registry is being prepared", registrySoon: "Publishing support for the first add-ons is coming soon.",
+    registryPreparing: "The registry is being prepared", registrySoon: "Publishing support for the first add-ons is coming soon.", registryLoading: "Loading published add-ons…", registryError: "The registry could not be loaded.", noPublishedAddons: "No add-ons have been published yet.", latestVersion: "Latest version", prerelease: "Prerelease", download: "Download", owner: "Owner",
     footerDescription: "Open add-on registry for Kairo",
   },
   account: {

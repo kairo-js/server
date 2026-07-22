@@ -91,6 +91,7 @@ APIはバージョンをURLに含め、将来の変更に備えます。
 
 ```text
 GET    /api/v1/addons/{id}
+GET    /api/v1/addons
 GET    /api/v1/addons/{id}/versions
 GET    /api/v1/addons/{id}/versions/latest
 GET    /api/v1/addons/{id}/versions/{version}/download

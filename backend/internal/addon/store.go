@@ -198,6 +198,35 @@ type CreateAddonInput struct {
 	AddonID, DisplayName, Description, UserID, OwnerType, OrganizationSlug string
 }
 
+func (s *Store) Addons(ctx context.Context) ([]Addon, error) {
+	rows, err := s.pool.Query(ctx, `SELECT a.id, a.addon_id, a.display_name, a.description, a.status, a.created_at,
+		CASE WHEN ao.organization_id IS NULL THEN 'user' ELSE 'organization' END,
+		COALESCE(o.slug, '')
+		FROM addons a
+		JOIN addon_owners ao ON ao.addon_id = a.id
+		LEFT JOIN organizations o ON o.id = ao.organization_id
+		WHERE a.status = 'active'
+		ORDER BY a.created_at DESC`)
+	if err != nil {
+		return nil, fmt.Errorf("list addons: %w", err)
+	}
+	defer rows.Close()
+	addons := make([]Addon, 0)
+	for rows.Next() {
+		var result Addon
+		var ownerType, ownerSlug string
+		if err := rows.Scan(&result.ID, &result.AddonID, &result.DisplayName, &result.Description, &result.Status, &result.CreatedAt, &ownerType, &ownerSlug); err != nil {
+			return nil, fmt.Errorf("scan addon: %w", err)
+		}
+		result.Owner = Owner{Type: ownerType, Slug: ownerSlug}
+		addons = append(addons, result)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list addons: %w", err)
+	}
+	return addons, nil
+}
+
 func (s *Store) Addon(ctx context.Context, addonID string) (Addon, error) {
 	var result Addon
 	var ownerType, ownerSlug string
