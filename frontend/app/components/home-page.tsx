@@ -21,7 +21,7 @@ export function HomePage({ locale }: { locale: Locale }) {
             <p className="hero-lead">{messages.lead}</p>
             <div className="hero-actions">
               <a className="button primary" href="#addons">{messages.findAddons}</a>
-              <a className="text-link" href={`/${locale}/account`}>{messages.publishAddon} <span aria-hidden="true">→</span></a>
+              <a className="text-link" href={`/${locale}/publish`}>{messages.publishAddon} <span aria-hidden="true">→</span></a>
             </div>
           </div>
           <div className="hero-art" aria-hidden="true">

@@ -42,6 +42,10 @@ This repository follows the shared `kairo-js/github-workflows` deployment model.
 | `DEV_GITHUB_CLIENT_SECRET` | GitHub OAuth App client secret for `dev.kairojs.com` |
 | `PROD_GITHUB_CLIENT_ID` | GitHub OAuth App client ID for `kairojs.com` |
 | `PROD_GITHUB_CLIENT_SECRET` | GitHub OAuth App client secret for `kairojs.com` |
+| `DEV_R2_ACCESS_KEY_ID` | dev R2 API access key ID |
+| `DEV_R2_SECRET_ACCESS_KEY` | dev R2 API secret access key |
+| `PROD_R2_ACCESS_KEY_ID` | prod R2 API access key ID |
+| `PROD_R2_SECRET_ACCESS_KEY` | prod R2 API secret access key |
 
 ## GitHub Variables
 
@@ -56,6 +60,10 @@ This repository follows the shared `kairo-js/github-workflows` deployment model.
 | `DEV_FRONTEND_PORT` | optional app host published frontend port |
 | `PROD_BACKEND_PORT` | optional app host published backend port |
 | `PROD_FRONTEND_PORT` | optional app host published frontend port |
+| `DEV_R2_ENDPOINT` | dev R2 account S3 API URL |
+| `DEV_R2_BUCKET` | dev R2 bucket name |
+| `PROD_R2_ENDPOINT` | prod R2 account S3 API URL |
+| `PROD_R2_BUCKET` | prod R2 bucket name |
 
 ## Google OAuth Redirect URIs
 

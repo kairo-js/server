@@ -2,7 +2,7 @@ import type { Locale } from "./config";
 
 export type Dictionary = {
   languageName: string;
-  header: { home: string; addons: string; develop: string; account: string; navigation: string; loginMethods: string };
+  header: { home: string; addons: string; develop: string; publish: string; account: string; navigation: string; loginMethods: string };
   home: {
     eyebrow: string; titleLine1: string; titleLine2: string; lead: string;
     findAddons: string; publishAddon: string; authError: string; registryEyebrow: string;
@@ -13,6 +13,16 @@ export type Dictionary = {
     eyebrow: string; loading: string; loginRequired: string; loginDescription: string;
     googleLogin: string; githubLogin: string; backHome: string; loadError: string;
     loadErrorDescription: string; reload: string; email: string; userId: string; logout: string;
+  };
+  publish: {
+    eyebrow: string; title: string; description: string; loading: string; loadError: string; loadErrorDescription: string; reload: string;
+    loginRequired: string; loginDescription: string; googleLogin: string; githubLogin: string;
+    ownerTitle: string; ownerDescription: string; personalPublisher: string; official: string;
+    detailsTitle: string; detailsDescription: string; id: string; idHelp: string; displayName: string; addonDescription: string;
+    descriptionPlaceholder: string; required: string; registrationNotice: string; create: string; submitting: string;
+    createdEyebrow: string; createdDescription: string; versionLabel: string; archiveLabel: string; archiveHelp: string;
+    publishVersion: string; publishingVersion: string; versionPublished: string; downloadVersion: string; backHome: string;
+    errors: Record<string, string>;
   };
   develop: {
     eyebrow: string; title: string; introBefore: string; introFile: string; introAfter: string;
@@ -53,7 +63,7 @@ export type Dictionary = {
 
 const ja: Dictionary = {
   languageName: "日本語",
-  header: { home: "トップ", addons: "アドオン", develop: "開発サポート", account: "アカウント", navigation: "メインナビゲーション", loginMethods: "ログイン方法" },
+  header: { home: "トップ", addons: "アドオン", develop: "開発サポート", publish: "投稿", account: "アカウント", navigation: "メインナビゲーション", loginMethods: "ログイン方法" },
   home: {
     eyebrow: "ADD-ONS FOR KAIRO", titleLine1: "つくる人と、", titleLine2: "遊ぶ人をつなぐ。",
     lead: "Kairoのアドオンを見つけて、すぐに導入。閲覧とダウンロードにアカウントは必要ありません。",
@@ -68,6 +78,16 @@ const ja: Dictionary = {
     loginDescription: "アカウントを表示するにはログインしてください。", googleLogin: "Googleでログイン", githubLogin: "GitHubでログイン",
     backHome: "トップへ戻る", loadError: "読み込めませんでした", loadErrorDescription: "アカウント情報の取得に失敗しました。時間をおいて再度お試しください。",
     reload: "再読み込み", email: "メールアドレス", userId: "ユーザーID", logout: "ログアウト",
+  },
+  publish: {
+    eyebrow: "PUBLISH ADD-ON", title: "アドオンを登録", description: "アドオンの所有者と基本情報を登録します。バージョンとZIPファイルは次の段階で投稿します。",
+    loading: "アカウントとOrganizationを読み込んでいます…", loadError: "投稿画面を読み込めませんでした", loadErrorDescription: "アカウントまたはOrganization情報の取得に失敗しました。", reload: "再読み込み",
+    loginRequired: "投稿するにはログインが必要です", loginDescription: "個人または所属Organizationとしてアドオンを登録できます。", googleLogin: "Googleでログイン", githubLogin: "GitHubでログイン",
+    ownerTitle: "所有者", ownerDescription: "アドオンを所有する個人またはOrganizationを選択します。", personalPublisher: "個人として登録", official: "公式",
+    detailsTitle: "基本情報", detailsDescription: "IDは登録後に変更できません。", id: "アドオンID", idHelp: "A-Z、a-z、0-9、ハイフンのみ。大文字は小文字として登録されます。", displayName: "表示名", addonDescription: "説明",
+    descriptionPlaceholder: "このアドオンでできること", required: "必須", registrationNotice: "登録後、最初のバージョンと配布ZIPを投稿します。", create: "アドオンを登録", submitting: "登録しています…",
+    createdEyebrow: "ADD-ON CREATED", createdDescription: "アドオンを登録しました。最初のバージョンと配布ZIPを投稿してください。", versionLabel: "バージョン", archiveLabel: "配布ZIP", archiveHelp: "有効なZIPファイル（最大256 MiB）。同じバージョンは再投稿できません。", publishVersion: "バージョンを投稿", publishingVersion: "アップロードしています…", versionPublished: "バージョンを公開しました", downloadVersion: "ZIPをダウンロード", backHome: "トップへ戻る",
+    errors: { invalid_request: "入力内容を確認してください。", invalid_addon: "アドオンID、表示名、説明を確認してください。", invalid_owner: "所有者を確認してください。", invalid_version: "SemVer形式のバージョンを入力してください。", invalid_archive: "有効で安全なZIPファイルを選択してください。", file_required: "配布ZIPを選択してください。", file_too_large: "ZIPは256 MiB以下にしてください。", version_exists: "このバージョンは既に投稿されています。", storage_error: "ファイルを保存できませんでした。", addon_id_unavailable: "このアドオンIDは利用できません。", organization_not_found: "Organizationが見つかりません。", owner_forbidden: "このOrganizationとして操作する権限がありません。", unauthenticated: "ログインし直してください。", unknown: "処理できませんでした。時間をおいて再度お試しください。" },
   },
   develop: {
     eyebrow: "DEVELOPMENT SUPPORT", title: "Kairo Project Builder", introBefore: "フォームを埋めるだけで、Kairoアドオン用の",
@@ -122,7 +142,7 @@ const ja: Dictionary = {
 
 const en: Dictionary = {
   languageName: "English",
-  header: { home: "Home", addons: "Add-ons", develop: "Developer tools", account: "Account", navigation: "Main navigation", loginMethods: "Sign-in methods" },
+  header: { home: "Home", addons: "Add-ons", develop: "Developer tools", publish: "Publish", account: "Account", navigation: "Main navigation", loginMethods: "Sign-in methods" },
   home: {
     eyebrow: "ADD-ONS FOR KAIRO", titleLine1: "Connecting creators", titleLine2: "with players.",
     lead: "Discover Kairo add-ons and install them right away. No account is required to browse or download.",
@@ -137,6 +157,16 @@ const en: Dictionary = {
     googleLogin: "Continue with Google", githubLogin: "Continue with GitHub", backHome: "Back to home", loadError: "Unable to load account",
     loadErrorDescription: "We couldn't retrieve your account. Please wait a moment and try again.", reload: "Reload", email: "Email address",
     userId: "User ID", logout: "Sign out",
+  },
+  publish: {
+    eyebrow: "PUBLISH ADD-ON", title: "Register an add-on", description: "Choose an owner and register the add-on basics. Upload its first version and ZIP in the next step.",
+    loading: "Loading your account and organizations…", loadError: "Unable to load publishing", loadErrorDescription: "We couldn't retrieve your account or organization information.", reload: "Reload",
+    loginRequired: "Sign in to publish", loginDescription: "Register an add-on personally or for an organization you belong to.", googleLogin: "Continue with Google", githubLogin: "Continue with GitHub",
+    ownerTitle: "Owner", ownerDescription: "Choose the person or organization that owns this add-on.", personalPublisher: "Register personally", official: "Official",
+    detailsTitle: "Basics", detailsDescription: "The ID cannot be changed after registration.", id: "Add-on ID", idHelp: "Use A-Z, a-z, 0-9, and hyphens. Uppercase letters are stored in lowercase.", displayName: "Display name", addonDescription: "Description",
+    descriptionPlaceholder: "What this add-on does", required: "Required", registrationNotice: "After registration, publish the first version and distribution ZIP.", create: "Register add-on", submitting: "Registering…",
+    createdEyebrow: "ADD-ON CREATED", createdDescription: "The add-on is registered. Upload its first version and distribution ZIP.", versionLabel: "Version", archiveLabel: "Distribution ZIP", archiveHelp: "A valid ZIP file, up to 256 MiB. A published version cannot be replaced.", publishVersion: "Publish version", publishingVersion: "Uploading…", versionPublished: "Version published", downloadVersion: "Download ZIP", backHome: "Back to home",
+    errors: { invalid_request: "Check the submitted information.", invalid_addon: "Check the add-on ID, display name, and description.", invalid_owner: "Check the selected owner.", invalid_version: "Enter a valid SemVer version.", invalid_archive: "Choose a valid and safe ZIP archive.", file_required: "Choose a distribution ZIP.", file_too_large: "The ZIP must be no larger than 256 MiB.", version_exists: "This version has already been published.", storage_error: "The file could not be stored.", addon_id_unavailable: "This add-on ID is unavailable.", organization_not_found: "The organization could not be found.", owner_forbidden: "You cannot perform this action for the organization.", unauthenticated: "Please sign in again.", unknown: "The request could not be completed. Please try again later." },
   },
   develop: {
     eyebrow: "DEVELOPMENT SUPPORT", title: "Kairo Project Builder", introBefore: "Complete the form to generate",

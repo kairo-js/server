@@ -16,6 +16,7 @@ import (
 const SessionLifetime = 30 * 24 * time.Hour
 
 var ErrSessionNotFound = errors.New("session not found")
+var ErrAPITokenNotFound = errors.New("API token not found")
 
 type User struct {
 	ID          string    `json:"id"`
@@ -31,6 +32,7 @@ type OAuthProfile struct {
 	Email       string
 	DisplayName string
 	AvatarURL   string
+	Username    string
 }
 
 type Store struct {
@@ -72,9 +74,9 @@ func (s *Store) UpsertOAuthUser(ctx context.Context, profile OAuthProfile) (User
 		}
 
 		_, err = tx.Exec(ctx, `
-			INSERT INTO oauth_accounts (provider, provider_user_id, user_id, email)
-			VALUES ($1, $2, $3, $4)
-		`, profile.Provider, profile.ID, user.ID, profile.Email)
+			INSERT INTO oauth_accounts (provider, provider_user_id, user_id, email, provider_login)
+			VALUES ($1, $2, $3, $4, NULLIF($5, ''))
+		`, profile.Provider, profile.ID, user.ID, profile.Email, profile.Username)
 		if err != nil {
 			return User{}, fmt.Errorf("create oauth account: %w", err)
 		}
@@ -91,9 +93,9 @@ func (s *Store) UpsertOAuthUser(ctx context.Context, profile OAuthProfile) (User
 			return User{}, fmt.Errorf("update user: %w", err)
 		}
 		_, err = tx.Exec(ctx, `
-			UPDATE oauth_accounts SET email = $3, updated_at = now()
+			UPDATE oauth_accounts SET email = $3, provider_login = NULLIF($4, ''), updated_at = now()
 			WHERE provider = $1 AND provider_user_id = $2
-		`, profile.Provider, profile.ID, profile.Email)
+		`, profile.Provider, profile.ID, profile.Email, profile.Username)
 		if err != nil {
 			return User{}, fmt.Errorf("update oauth account: %w", err)
 		}
@@ -146,4 +148,57 @@ func (s *Store) DeleteSession(ctx context.Context, token string) error {
 	hash := sha256.Sum256([]byte(token))
 	_, err := s.pool.Exec(ctx, "DELETE FROM sessions WHERE token_hash = $1", hash[:])
 	return err
+}
+
+type APIToken struct {
+	ID         string     `json:"id"`
+	Name       string     `json:"name"`
+	LastUsedAt *time.Time `json:"lastUsedAt"`
+	ExpiresAt  *time.Time `json:"expiresAt"`
+	CreatedAt  time.Time  `json:"createdAt"`
+}
+
+func (s *Store) CreateAPIToken(ctx context.Context, userID, name string) (APIToken, string, error) {
+	raw := make([]byte, 32)
+	if _, err := rand.Read(raw); err != nil {
+		return APIToken{}, "", err
+	}
+	token := "kairo_" + base64.RawURLEncoding.EncodeToString(raw)
+	hash := sha256.Sum256([]byte(token))
+	var result APIToken
+	err := s.pool.QueryRow(ctx, `INSERT INTO api_tokens (user_id, name, token_hash) VALUES ($1, $2, $3)
+		RETURNING id, name, last_used_at, expires_at, created_at`, userID, name, hash[:]).
+		Scan(&result.ID, &result.Name, &result.LastUsedAt, &result.ExpiresAt, &result.CreatedAt)
+	if err != nil {
+		return APIToken{}, "", fmt.Errorf("create API token: %w", err)
+	}
+	return result, token, nil
+}
+
+func (s *Store) UserByAPIToken(ctx context.Context, token string) (User, error) {
+	hash := sha256.Sum256([]byte(token))
+	var user User
+	err := s.pool.QueryRow(ctx, `SELECT u.id, u.email, u.display_name, u.avatar_url, u.created_at
+		FROM api_tokens t JOIN users u ON u.id = t.user_id
+		WHERE t.token_hash = $1 AND (t.expires_at IS NULL OR t.expires_at > now())`, hash[:]).
+		Scan(&user.ID, &user.Email, &user.DisplayName, &user.AvatarURL, &user.CreatedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return User{}, ErrAPITokenNotFound
+	}
+	if err != nil {
+		return User{}, err
+	}
+	_, _ = s.pool.Exec(ctx, "UPDATE api_tokens SET last_used_at = now() WHERE token_hash = $1", hash[:])
+	return user, nil
+}
+
+func (s *Store) DeleteAPIToken(ctx context.Context, userID, tokenID string) error {
+	result, err := s.pool.Exec(ctx, "DELETE FROM api_tokens WHERE id = $1 AND user_id = $2", tokenID, userID)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return ErrAPITokenNotFound
+	}
+	return nil
 }

@@ -110,10 +110,15 @@ func (h *authHandler) githubCallback(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.store.UpsertOAuthUser(r.Context(), auth.OAuthProfile{
 		Provider: "github", ID: strconv.FormatInt(profile.ID, 10),
-		Email: strings.ToLower(email), DisplayName: displayName, AvatarURL: profile.AvatarURL,
+		Email: strings.ToLower(email), DisplayName: displayName, AvatarURL: profile.AvatarURL, Username: profile.Login,
 	})
 	if err != nil {
 		log.Printf("save github user failed: %v", err)
+		h.redirectAuthError(w, r, "account_save_failed")
+		return
+	}
+	if err := h.officialOrganizations.BootstrapOfficialOwner(r.Context(), user.ID, profile.Login); err != nil {
+		log.Printf("bootstrap official organization owner failed: %v", err)
 		h.redirectAuthError(w, r, "account_save_failed")
 		return
 	}

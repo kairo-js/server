@@ -57,6 +57,24 @@ GITHUB_CLIENT_SECRET=your-client-secret
 
 GitHub OAuthが未設定の場合もサービスは起動しますが、GitHubログインAPIは `503 Service Unavailable` を返します。
 
+## Local Add-on Storage
+
+配布ZIPは初期状態では`./data/addons`へ保存されます。保存先は次の環境変数で変更できます。
+
+```text
+STORAGE_PATH=/path/to/persistent/addon-storage
+```
+
+Cloudflare R2を使用する場合は、R2バケットとObject Read & Write権限のAPIトークンを作成し、次を設定します。`R2_ENDPOINT`はバケットを含まないアカウント単位のS3 API URLです。
+
+```text
+STORAGE_DRIVER=r2
+R2_ENDPOINT=https://ACCOUNT_ID.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=your-access-key-id
+R2_SECRET_ACCESS_KEY=your-secret-access-key
+R2_BUCKET=kairo-addons
+```
+
 ## Required Settings
 
 Use the same secret and variable names as werewolf-server, but with Kairo-specific values for DB passwords and Google Drive destinations.

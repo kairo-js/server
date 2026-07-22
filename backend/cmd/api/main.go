@@ -37,6 +37,12 @@ func main() {
 		GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 		GitHubClientID:     os.Getenv("GITHUB_CLIENT_ID"),
 		GitHubClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
+		StoragePath:        getEnv("STORAGE_PATH", "./data/addons"),
+		StorageDriver:      getEnv("STORAGE_DRIVER", "filesystem"),
+		R2Endpoint:         os.Getenv("R2_ENDPOINT"),
+		R2AccessKeyID:      os.Getenv("R2_ACCESS_KEY_ID"),
+		R2SecretAccessKey:  os.Getenv("R2_SECRET_ACCESS_KEY"),
+		R2Bucket:           os.Getenv("R2_BUCKET"),
 	})
 
 	log.Printf("starting server on :%s", port)

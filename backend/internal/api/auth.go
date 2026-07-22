@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
@@ -25,7 +26,10 @@ const (
 )
 
 type authHandler struct {
-	store      *auth.Store
+	store                 *auth.Store
+	officialOrganizations interface {
+		BootstrapOfficialOwner(ctx context.Context, userID, githubLogin string) error
+	}
 	config     Config
 	httpClient *http.Client
 }

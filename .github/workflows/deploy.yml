@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   release:
-    uses: kairo-js/github-workflows/.github/workflows/web-app-release.yml@v0.2.4
+    uses: kairo-js/github-workflows/.github/workflows/web-app-release.yml@v0.2.5
     with:
       app-name: kairo
       image-prefix: kairo-js
@@ -34,6 +34,12 @@ jobs:
       prod-frontend-port: ${{ vars.PROD_FRONTEND_PORT }}
       dev-public-url: https://dev.kairojs.com
       prod-public-url: https://kairojs.com
+      dev-storage-driver: r2
+      prod-storage-driver: r2
+      dev-r2-endpoint: ${{ vars.DEV_R2_ENDPOINT }}
+      prod-r2-endpoint: ${{ vars.PROD_R2_ENDPOINT }}
+      dev-r2-bucket: ${{ vars.DEV_R2_BUCKET }}
+      prod-r2-bucket: ${{ vars.PROD_R2_BUCKET }}
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -62,3 +68,7 @@ jobs:
       DEV_GITHUB_CLIENT_SECRET: ${{ secrets.DEV_GITHUB_CLIENT_SECRET }}
       PROD_GITHUB_CLIENT_ID: ${{ secrets.PROD_GITHUB_CLIENT_ID }}
       PROD_GITHUB_CLIENT_SECRET: ${{ secrets.PROD_GITHUB_CLIENT_SECRET }}
+      DEV_R2_ACCESS_KEY_ID: ${{ secrets.DEV_R2_ACCESS_KEY_ID }}
+      DEV_R2_SECRET_ACCESS_KEY: ${{ secrets.DEV_R2_SECRET_ACCESS_KEY }}
+      PROD_R2_ACCESS_KEY_ID: ${{ secrets.PROD_R2_ACCESS_KEY_ID }}
+      PROD_R2_SECRET_ACCESS_KEY: ${{ secrets.PROD_R2_SECRET_ACCESS_KEY }}

@@ -21,6 +21,7 @@ export function SiteHeader({ locale, showLogin = true }: SiteHeaderProps) {
       <nav className="header-nav" aria-label={messages.header.navigation}>
         <Link href={`/${locale}/#addons`}>{messages.header.addons}</Link>
         <Link href={`/${locale}/develop`}>{messages.header.develop}</Link>
+        <Link href={`/${locale}/publish`}>{messages.header.publish}</Link>
         <LocaleSwitcher locale={locale} />
         {showLogin ? (
           <div className="login-actions" aria-label={messages.header.loginMethods}>
