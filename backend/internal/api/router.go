@@ -68,6 +68,7 @@ func NewRouter(pool *pgxpool.Pool, config Config) http.Handler {
 	mux.HandleFunc("GET /api/v1/me", authAPI.me)
 	mux.HandleFunc("POST /api/v1/logout", authAPI.logout)
 	mux.HandleFunc("GET /api/v1/addon-ids/{id}/availability", addonIDs.availability)
+	mux.HandleFunc("GET /api/v1/tokens", tokens.list)
 	mux.HandleFunc("POST /api/v1/tokens", tokens.create)
 	mux.HandleFunc("DELETE /api/v1/tokens/{id}", tokens.revoke)
 	mux.HandleFunc("POST /api/v1/development-projects/generated", developmentProjects.generated)

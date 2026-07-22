@@ -192,6 +192,22 @@ p { font-size: 17px; line-height: 1.7; }
 .account-details dt { color: var(--muted); font-size: 13px; font-weight: 700; text-transform: uppercase; }
 .account-details dd { margin: 0; overflow-wrap: anywhere; font-size: 17px; }
 .monospace { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 14px !important; }
+.token-section { display: grid; gap: 16px; margin-top: 36px; padding-top: 32px; border-top: 1px solid var(--line); }
+.token-section h2 { font-size: 25px; }
+.token-section > p { margin: -8px 0 0; color: var(--muted); font-size: 14px; }
+.token-form { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 12px; }
+.token-form .button { min-height: 42px; }
+.new-token { display: grid; gap: 10px; padding: 18px; border: 1px solid #a9cdbb; border-radius: 9px; background: #eff8f3; }
+.new-token p { margin: 0; color: #4e6257; font-size: 13px; }
+.new-token code { padding: 12px; overflow-wrap: anywhere; border-radius: 6px; background: #15251d; color: #d8f2e6; font-size: 12px; }
+.new-token .button { min-height: 38px; justify-self: start; }
+.token-list { display: grid; gap: 8px; }
+.token-list > p { color: var(--muted); font-size: 14px; }
+.token-list article { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; }
+.token-list article > div { display: grid; min-width: 0; gap: 5px; }
+.token-list small { color: var(--muted); font-size: 11px; }
+.token-list article > button { padding: 7px 10px; border: 1px solid #dfc8c5; border-radius: 6px; color: #96372f; background: #fff8f7; cursor: pointer; }
+@media (max-width: 600px) { .token-form { grid-template-columns: 1fr; } .token-list article { align-items: flex-start; } }
 
 .develop-page { width: min(100% - 48px, 1280px); margin: 0 auto; padding: 72px 0 110px; }
 .develop-intro { max-width: 760px; margin-bottom: 52px; }

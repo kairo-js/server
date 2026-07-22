@@ -175,6 +175,27 @@ func (s *Store) CreateAPIToken(ctx context.Context, userID, name string) (APITok
 	return result, token, nil
 }
 
+func (s *Store) APITokens(ctx context.Context, userID string) ([]APIToken, error) {
+	rows, err := s.pool.Query(ctx, `SELECT id, name, last_used_at, expires_at, created_at
+		FROM api_tokens WHERE user_id = $1 ORDER BY created_at DESC`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("list API tokens: %w", err)
+	}
+	defer rows.Close()
+	tokens := make([]APIToken, 0)
+	for rows.Next() {
+		var token APIToken
+		if err := rows.Scan(&token.ID, &token.Name, &token.LastUsedAt, &token.ExpiresAt, &token.CreatedAt); err != nil {
+			return nil, fmt.Errorf("list API tokens: %w", err)
+		}
+		tokens = append(tokens, token)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("list API tokens: %w", err)
+	}
+	return tokens, nil
+}
+
 func (s *Store) UserByAPIToken(ctx context.Context, token string) (User, error) {
 	hash := sha256.Sum256([]byte(token))
 	var user User

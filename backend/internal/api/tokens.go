@@ -12,8 +12,22 @@ import (
 )
 
 type apiTokenStore interface {
+	APITokens(context.Context, string) ([]auth.APIToken, error)
 	CreateAPIToken(context.Context, string, string) (auth.APIToken, string, error)
 	DeleteAPIToken(context.Context, string, string) error
+}
+
+func (h *tokenHandler) list(w http.ResponseWriter, r *http.Request) {
+	user, ok := authenticatedUser(h.sessions, w, r)
+	if !ok {
+		return
+	}
+	tokens, err := h.store.APITokens(r.Context(), user.ID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Could not list API tokens")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"tokens": tokens})
 }
 
 type tokenHandler struct {

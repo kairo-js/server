@@ -13,6 +13,9 @@ export type Dictionary = {
     eyebrow: string; loading: string; loginRequired: string; loginDescription: string;
     googleLogin: string; githubLogin: string; backHome: string; loadError: string;
     loadErrorDescription: string; reload: string; email: string; userId: string; logout: string;
+    tokensTitle: string; tokensDescription: string; tokenName: string; tokenNamePlaceholder: string; createToken: string;
+    creatingToken: string; tokenCreated: string; tokenCreatedNotice: string; copyToken: string; copiedToken: string;
+    noTokens: string; createdAt: string; lastUsed: string; neverUsed: string; revokeToken: string; tokenError: string;
   };
   publish: {
     eyebrow: string; title: string; description: string; loading: string; loadError: string; loadErrorDescription: string; reload: string;
@@ -78,6 +81,7 @@ const ja: Dictionary = {
     loginDescription: "アカウントを表示するにはログインしてください。", googleLogin: "Googleでログイン", githubLogin: "GitHubでログイン",
     backHome: "トップへ戻る", loadError: "読み込めませんでした", loadErrorDescription: "アカウント情報の取得に失敗しました。時間をおいて再度お試しください。",
     reload: "再読み込み", email: "メールアドレス", userId: "ユーザーID", logout: "ログアウト",
+    tokensTitle: "APIトークン", tokensDescription: "Kairo CLIからアドオンを公開するためのトークンです。トークンの値は発行時に一度だけ表示されます。", tokenName: "トークン名", tokenNamePlaceholder: "開発PCのKairo CLI", createToken: "トークンを発行", creatingToken: "発行しています…", tokenCreated: "APIトークンを発行しました", tokenCreatedNotice: "この値は再表示できません。今すぐ安全な場所へ保存してください。", copyToken: "コピー", copiedToken: "コピーしました", noTokens: "発行済みのAPIトークンはありません。", createdAt: "発行日", lastUsed: "最終使用", neverUsed: "未使用", revokeToken: "失効", tokenError: "APIトークンを操作できませんでした。",
   },
   publish: {
     eyebrow: "PUBLISH ADD-ON", title: "アドオンを登録", description: "アドオンの所有者と基本情報を登録します。バージョンとZIPファイルは次の段階で投稿します。",
@@ -157,6 +161,7 @@ const en: Dictionary = {
     googleLogin: "Continue with Google", githubLogin: "Continue with GitHub", backHome: "Back to home", loadError: "Unable to load account",
     loadErrorDescription: "We couldn't retrieve your account. Please wait a moment and try again.", reload: "Reload", email: "Email address",
     userId: "User ID", logout: "Sign out",
+    tokensTitle: "API tokens", tokensDescription: "Use these tokens to publish add-ons from the Kairo CLI. A token value is shown only once when created.", tokenName: "Token name", tokenNamePlaceholder: "Kairo CLI on development PC", createToken: "Create token", creatingToken: "Creating…", tokenCreated: "API token created", tokenCreatedNotice: "This value cannot be shown again. Store it somewhere safe now.", copyToken: "Copy", copiedToken: "Copied", noTokens: "You have no API tokens.", createdAt: "Created", lastUsed: "Last used", neverUsed: "Never", revokeToken: "Revoke", tokenError: "The API token operation failed.",
   },
   publish: {
     eyebrow: "PUBLISH ADD-ON", title: "Register an add-on", description: "Choose an owner and register the add-on basics. Upload its first version and ZIP in the next step.",

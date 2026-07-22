@@ -11,10 +11,15 @@ import (
 )
 
 type fakeTokenStore struct {
+	tokens   []auth.APIToken
 	metadata auth.APIToken
 	token    string
 	userID   string
 	name     string
+}
+
+func (f *fakeTokenStore) APITokens(context.Context, string) ([]auth.APIToken, error) {
+	return f.tokens, nil
 }
 
 func (f *fakeTokenStore) CreateAPIToken(_ context.Context, userID, name string) (auth.APIToken, string, error) {
@@ -43,6 +48,18 @@ func TestCreateAPITokenReturnsPlaintextOnce(t *testing.T) {
 	handler.create(response, request)
 	if response.Code != http.StatusCreated || store.userID != "user-id" || store.name != "Windows launcher" || !strings.Contains(response.Body.String(), `"token":"kairo_secret"`) {
 		t.Fatalf("status = %d, user = %q, name = %q, body = %s", response.Code, store.userID, store.name, response.Body.String())
+	}
+}
+
+func TestListAPITokensDoesNotReturnPlaintext(t *testing.T) {
+	store := &fakeTokenStore{tokens: []auth.APIToken{{ID: "token-id", Name: "Kairo CLI"}}}
+	handler := &tokenHandler{store: store, sessions: &fakeSessionUserStore{user: auth.User{ID: "user-id"}}}
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/tokens", nil)
+	request.AddCookie(&http.Cookie{Name: sessionCookieName, Value: "session"})
+	response := httptest.NewRecorder()
+	handler.list(response, request)
+	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"name":"Kairo CLI"`) || strings.Contains(response.Body.String(), "kairo_secret") {
+		t.Fatalf("status = %d, body = %s", response.Code, response.Body.String())
 	}
 }
 
