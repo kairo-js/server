@@ -13,8 +13,9 @@ import (
 
 var ErrNotFound = errors.New("organization not found")
 
-const officialOrganizationSlug = "kairo-js"
 const officialOwnerGitHubLogin = "shizuku86"
+
+var officialOrganizationSlugs = []string{"kairo-js", "mc-werewolf"}
 
 type Organization struct {
 	ID          string    `json:"id"`
@@ -85,14 +86,14 @@ func (s *Store) BootstrapOfficialOwner(ctx context.Context, userID, githubLogin 
 	}
 	command, err := s.pool.Exec(ctx, `
 		INSERT INTO organization_members (organization_id, user_id, role)
-		SELECT id, $1, 'owner' FROM organizations WHERE slug = $2
+		SELECT id, $1, 'owner' FROM organizations WHERE slug = ANY($2)
 		ON CONFLICT (organization_id, user_id) DO UPDATE SET role = 'owner', updated_at = now()
-	`, userID, officialOrganizationSlug)
+	`, userID, officialOrganizationSlugs)
 	if err != nil {
 		return fmt.Errorf("bootstrap official organization owner: %w", err)
 	}
-	if command.RowsAffected() != 1 {
-		return fmt.Errorf("bootstrap official organization owner: organization missing")
+	if command.RowsAffected() != int64(len(officialOrganizationSlugs)) {
+		return fmt.Errorf("bootstrap official organization owner: one or more organizations missing")
 	}
 	return nil
 }
